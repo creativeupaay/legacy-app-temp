@@ -28,9 +28,35 @@ const AuthUserSchema = new Schema<IAuthUserDocument>(
       lowercase: true,
       trim: true,
     },
+    fullName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    avatar: {
+      type: String,
+      default: null,
+    },
     hasOnboarded: {
       type: Boolean,
       default: false,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    lastActiveAt: {
+      type: Date,
+      default: null,
+    },
+    trigger: {
+      inactivityDays: { type: Number, default: 90 },
+      status: {
+        type: String,
+        enum: ["not_triggered", "triggered"],
+        default: "not_triggered",
+      },
+      triggeredAt: { type: Date, default: null },
     },
     refreshTokens: {
       type: [RefreshTokenSchema],

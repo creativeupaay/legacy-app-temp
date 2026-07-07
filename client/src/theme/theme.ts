@@ -8,7 +8,7 @@ export const theme = {
       elevated: "#FFFFF9",
       primary: "#E3F1F7",
       nav: "#F8F8F8",
-      bg: "#F7F7F5", // NEW — app background shade from placeholder tokens
+      bg: "#F2F3EE", // NEW — app background shade from placeholder tokens
       disabled: "#D7D7D7", // NEW — Button disabled background
     },
 
@@ -62,7 +62,8 @@ export const theme = {
 
   fonts: {          // NEW — theme.ts had no font definitions at all
     sans: "Inter, ui-sans-serif, system-ui",
-    heading: "Nunito, ui-sans-serif, system-ui",
+    heading: "Inter, ui-sans-serif, system-ui",
+    serif: "Georgia, ui-serif, system-ui",
   },
 
   hover: {          // NEW — top-level group for JS mouseenter/mouseleave hover states

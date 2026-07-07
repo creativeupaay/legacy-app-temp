@@ -1,81 +1,81 @@
-import React from "react";
-import { useAppSelector } from "@/app/hooks";
-import { useLogoutMutation } from "@/features/auth/api/authApi";
-import { theme } from "@/theme/theme";
+import React, { useState } from "react";
+import {
+  useGetMyProfileQuery,
+  useUpdateMyProfileMutation,
+  useUploadProfileImageMutation,
+  useGetProfileInsightsQuery,
+  ProfileCard,
+  EditProfileModal,
+  ProfileInsights,
+  ProfileRecipients,
+  ProfileSettingsCard,
+} from "@/features/profile";
+import {
+  useGetContactsQuery,
+  useCreateContactMutation,
+} from "@/features/journal/api/journalApi";
+import type { ICreateContactRequest } from "@/features/journal/types/contacts.types";
 
 const ProfilePage: React.FC = () => {
-  const { user } = useAppSelector((state) => state.auth);
-  const [logout, { isLoading }] = useLogoutMutation();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const handleLogout = async () => {
-    try {
-      await logout({}).unwrap();
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
+  // Queries
+  const { data: profileResponse, isLoading: isLoadingProfile } = useGetMyProfileQuery();
+  const { data: insightsResponse, isLoading: isLoadingInsights } = useGetProfileInsightsQuery();
+  const { data: contacts = [], isLoading: isLoadingContacts } = useGetContactsQuery();
+
+  // Mutations
+  const [updateProfile, { isLoading: isUpdating }] = useUpdateMyProfileMutation();
+  const [uploadProfileImage] = useUploadProfileImageMutation();
+  const [createContact, { isLoading: isAddingContact }] = useCreateContactMutation();
+
+  const profile = profileResponse?.data?.profile || null;
+  const insights = insightsResponse?.data?.insights || undefined;
+
+  const handleUpdateProfile = async (data: { fullName: string }) => {
+    await updateProfile(data).unwrap();
   };
 
-  const initial = user?.email?.charAt(0).toUpperCase() || "U";
+  const handleUploadImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append("image", file);
+    return await uploadProfileImage(formData).unwrap();
+  };
+
+  const handleAddContact = async (data: ICreateContactRequest) => {
+    await createContact(data).unwrap();
+  };
 
   return (
-    <div className="space-y-6">
-      <h1
-        style={{ color: theme.colors.text.primary }}
-        className="text-2xl font-bold"
-      >
-        Profile
-      </h1>
+    <div className="w-full max-w-full mx-auto space-y-5 sm:space-y-6 pt-3 sm:pt-4 pb-24 sm:pb-28 animate-in fade-in duration-200">
+      <ProfileCard
+        profile={profile}
+        isLoading={isLoadingProfile}
+        onEditClick={() => setIsEditModalOpen(true)}
+      />
 
-      <div
-        style={{
-          backgroundColor: theme.colors.surface.default,
-          borderColor: theme.colors.stroke.border,
-        }}
-        className="p-6 rounded-2xl border shadow-xs flex items-center gap-4"
-      >
-        <div
-          style={{
-            backgroundColor: theme.colors.primary.action,
-            color: theme.colors.text.inverse,
-          }}
-          className="w-14 h-14 rounded-full text-xl font-bold flex items-center justify-center shrink-0"
-        >
-          {initial}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p
-            style={{ color: theme.colors.text.muted }}
-            className="text-xs font-medium uppercase tracking-wider"
-          >
-            Signed in as
-          </p>
-          <p
-            style={{ color: theme.colors.text.primary }}
-            className="text-base font-semibold truncate"
-          >
-            {user?.email || "User"}
-          </p>
-        </div>
-      </div>
+      <ProfileInsights
+        insights={insights}
+        isLoading={isLoadingInsights}
+      />
 
-      <div className="pt-4">
-        <button
-          type="button"
-          onClick={handleLogout}
-          disabled={isLoading}
-          style={{
-            backgroundColor: theme.colors.error.bg,
-            color: theme.colors.error.textDark,
-            borderColor: theme.colors.error.border,
-          }}
-          className="w-full border rounded-xl py-3 px-4 font-semibold text-sm transition-opacity hover:opacity-80 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          <span>{isLoading ? "Logging out..." : "Log out"}</span>
-        </button>
-      </div>
+      <ProfileRecipients
+        contacts={contacts}
+        isLoading={isLoadingContacts}
+        onAddContact={handleAddContact}
+        isAdding={isAddingContact}
+      />
+
+      <ProfileSettingsCard />
+
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        profile={profile}
+        onSave={handleUpdateProfile}
+        onUploadImage={handleUploadImage}
+        isLoading={isUpdating}
+      />
     </div>
   );
 };

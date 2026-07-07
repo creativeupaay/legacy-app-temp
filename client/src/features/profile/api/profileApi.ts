@@ -2,6 +2,8 @@ import { baseApi } from "@/app/baseApi";
 import type {
   IProfileResponse,
   IUpdateProfileRequest,
+  IProfileInsightsResponse,
+  IUploadImageResponse,
 } from "../types/profile.types";
 
 export const profileApi = baseApi.injectEndpoints({
@@ -19,10 +21,29 @@ export const profileApi = baseApi.injectEndpoints({
     updateMyProfile: builder.mutation<IProfileResponse, IUpdateProfileRequest>({
       query: (data) => ({
         url: "/profile/me",
-        method: "PUT",
+        method: "PATCH",
         body: data,
       }),
       invalidatesTags: ["Profile"],
+    }),
+
+    // Upload profile image
+    uploadProfileImage: builder.mutation<IUploadImageResponse, FormData>({
+      query: (formData) => ({
+        url: "/profile/upload-image",
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["Profile"],
+    }),
+
+    // Get profile insights
+    getProfileInsights: builder.query<IProfileInsightsResponse, void>({
+      query: () => ({
+        url: "/profile/insights",
+        method: "GET",
+      }),
+      providesTags: ["Insights"],
     }),
 
     // Get profile by user ID
@@ -42,6 +63,8 @@ export const {
   useGetMyProfileQuery,
   useLazyGetMyProfileQuery,
   useUpdateMyProfileMutation,
+  useUploadProfileImageMutation,
+  useGetProfileInsightsQuery,
   useGetProfileByUserIdQuery,
   useLazyGetProfileByUserIdQuery,
 } = profileApi;

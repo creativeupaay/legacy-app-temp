@@ -5,12 +5,14 @@ import {
   Check,
   SquarePen,
   Mic,
+  Search,
+  Calendar,
   type LucideIcon,
 } from "lucide-react";
 import { theme } from "@/theme/theme";
 
 export interface IconButtonProps {
-  variant: "back" | "close" | "save" | "write" | "audio";
+  variant: "back" | "close" | "save" | "write" | "audio" | "search" | "calendar";
   onClick?: () => void;
   disabled?: boolean;
   "aria-label": string;
@@ -93,7 +95,36 @@ const VARIANT_CONFIG: Record<
     },
     className: "border-[0.5px]",
   },
+  search: {
+    icon: Search,
+    iconSize: "size-5",
+    strokeWidth: 2,
+    style: {
+      backgroundColor: theme.colors.surface.default,
+      borderColor: "rgba(0,0,0,0.04)",
+    },
+    iconStyle: {
+      color: theme.colors.text.primary,
+    },
+    className:
+      "border-[0.5px] shadow-[0px_2px_0.75px_rgba(0,0,0,0.12),0px_1px_0.4px_rgba(0,0,0,0.04)]",
+  },
+  calendar: {
+    icon: Calendar,
+    iconSize: "size-5",
+    strokeWidth: 2,
+    style: {
+      backgroundColor: theme.colors.surface.default,
+      borderColor: "rgba(0,0,0,0.04)",
+    },
+    iconStyle: {
+      color: theme.colors.text.primary,
+    },
+    className:
+      "border-[0.5px] shadow-[0px_2px_0.75px_rgba(0,0,0,0.12),0px_1px_0.4px_rgba(0,0,0,0.04)]",
+  },
 };
+
 
 export const IconButton: React.FC<IconButtonProps> = ({
   variant,

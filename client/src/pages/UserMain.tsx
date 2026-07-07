@@ -4,17 +4,16 @@ import AuthFlow from "@/features/auth/components/AuthFlow";
 import { AppLayout } from "@/components/layout";
 import HomePage from "./home/HomePage";
 import JournalPage from "./journal/JournalPage";
-import JournalDetailPage from "./journal/JournalDetailPage";
+import JournalWritePage from "./journal/JournalWritePage";
+import PrivacySelectionPage from "./journal/PrivacySelectionPage";
 import MemoriesPage from "./memories/MemoriesPage";
 import ProfilePage from "./profile/ProfilePage";
+import SettingsPage from "./profile/SettingsPage";
+import SharingPage from "./profile/SharingPage";
 import OnboardingPage from "./onboarding/OnboardingPage";
 import { useAppSelector } from "@/app/hooks";
 
-/**
- * OnboardingGuard — allows access to /onboarding only if hasOnboarded is
- * false. Returning users who navigate there manually are redirected to
- * /home.
- */
+
 const OnboardingGuard: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -50,6 +49,31 @@ const UserMain = () => {
         }
       />
 
+      {/* Full-screen Private Routes (without Bottom Nav Bar per Figma Images 2, 3, 4) */}
+      <Route
+        path="/journal/write"
+        element={
+          <AuthWrapper routeType="private" redirectPath="/login">
+            <JournalWritePage />
+          </AuthWrapper>
+        }
+      />
+      <Route
+        path="/journal/privacy"
+        element={
+          <AuthWrapper routeType="private" redirectPath="/login">
+            <PrivacySelectionPage />
+          </AuthWrapper>
+        }
+      />
+      <Route
+        path="/journal/:entryId"
+        element={
+          <AuthWrapper routeType="private" redirectPath="/login">
+            <JournalWritePage />
+          </AuthWrapper>
+        }
+      />
 
       {/* Private Routes inside AppLayout */}
       <Route
@@ -61,9 +85,10 @@ const UserMain = () => {
       >
         <Route path="/home" element={<HomePage />} />
         <Route path="/journal" element={<JournalPage />} />
-        <Route path="/journal/:entryId" element={<JournalDetailPage />} />
         <Route path="/memories" element={<MemoriesPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/settings" element={<SettingsPage />} />
+        <Route path="/profile/sharing" element={<SharingPage />} />
       </Route>
 
       {/* Default redirect */}
@@ -74,3 +99,4 @@ const UserMain = () => {
 };
 
 export default UserMain;
+

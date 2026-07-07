@@ -15,3 +15,12 @@ export { default as QuickViewCalendarDate } from "./QuickViewCalendarDate";
 export type { QuickViewCalendarDateProps, CalendarDateVariant } from "./QuickViewCalendarDate";
 export { default as Button } from "./Button";
 export type { ButtonProps } from "./Button";
+export { default as BottomSheet } from "./BottomSheet";
+export type { BottomSheetProps } from "./BottomSheet";
+export { default as Chip } from "./Chip";
+export type { ChipProps } from "./Chip";
+export { default as Avatar } from "./Avatar";
+export type { AvatarProps } from "./Avatar";
+export { default as Card } from "./Card";
+export type { CardProps } from "./Card";
+

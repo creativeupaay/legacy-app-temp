@@ -5,10 +5,11 @@ import { theme } from "@/theme/theme";
 export type CalendarDateVariant = "empty" | "completed" | "streak";
 
 export interface QuickViewCalendarDateProps {
-  day: string; // "Day" label, e.g. weekday abbreviation "M", "T", "W"
+  day?: string; // "Day" label, e.g. weekday abbreviation "M", "T", "W"
   date?: string; // "00" or e.g. "14" — required for empty/completed, unused for streak
   variant: CalendarDateVariant;
   className?: string;
+  onClick?: () => void;
 }
 
 export const QuickViewCalendarDate: React.FC<QuickViewCalendarDateProps> = ({
@@ -16,6 +17,7 @@ export const QuickViewCalendarDate: React.FC<QuickViewCalendarDateProps> = ({
   date,
   variant,
   className = "",
+  onClick,
 }) => {
   const circleStyle: React.CSSProperties = {
     backgroundColor:
@@ -41,18 +43,21 @@ export const QuickViewCalendarDate: React.FC<QuickViewCalendarDateProps> = ({
 
   return (
     <div
+      onClick={onClick}
       data-component="Quick view calendar dates"
       data-variant={
         variant === "completed" ? "Completed" : variant === "streak" ? "Variant4" : "Empty"
       }
-      className={`flex flex-col items-center gap-1 shrink-0 ${className}`.trim()}
+      className={`flex flex-col items-center justify-center gap-1 shrink-0 ${onClick ? "cursor-pointer hover:opacity-85 active:scale-95 transition-all" : ""} ${className}`.trim()}
     >
-      <span
-        style={dayStyle}
-        className="w-[26px] text-[14px] font-normal leading-none text-center shrink-0"
-      >
-        {day}
-      </span>
+      {day && (
+        <span
+          style={dayStyle}
+          className="w-[26px] text-[14px] font-normal leading-none text-center shrink-0"
+        >
+          {day}
+        </span>
+      )}
       {/* Note: rounded-[24px] on a 40px box produces a circular squircle per Figma spec */}
       <div
         style={circleStyle}

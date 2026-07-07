@@ -10,6 +10,7 @@ import {
   COOKIE_NAMES,
   getRefreshTokenExpiry,
   generateAccessToken,
+  generateRefreshToken,
 } from "../utils/jwt.utils";
 import {
   generateOtp,
@@ -81,7 +82,11 @@ export const verifyOtp = asyncHandler(async (req: Request<{}, {}, VerifyOtpInput
   const isNewUser = !user || !user.hasOnboarded;
 
   if (!user) {
-    await AuthUser.create({ email: normalizedEmail });
+    await AuthUser.create({
+      email: normalizedEmail,
+      isVerified: true,
+      lastActiveAt: new Date(),
+    });
     // Re-fetch with refreshTokens selected
     user = await AuthUser.findOne({ email: normalizedEmail }).select("+refreshTokens");
   }
@@ -97,15 +102,23 @@ export const verifyOtp = asyncHandler(async (req: Request<{}, {}, VerifyOtpInput
   // Generate access and refresh tokens
   const { accessToken, refreshToken } = generateTokens(user._id.toString());
 
-  // Prune expired refresh tokens, append new one
+  // Prune expired refresh tokens, append new one, and cap active sessions
   const now = new Date();
-  const validTokens = (user.refreshTokens ?? []).filter((rt) => rt.expiresAt > now);
+  let updatedTokens = (user.refreshTokens ?? [])
+    .filter((rt) => rt.expiresAt > now)
+    .concat({ token: refreshToken, createdAt: now, expiresAt: getRefreshTokenExpiry() });
+
+  const MAX_ACTIVE_SESSIONS = 5;
+  if (updatedTokens.length > MAX_ACTIVE_SESSIONS) {
+    updatedTokens = updatedTokens
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, MAX_ACTIVE_SESSIONS);
+  }
 
   await AuthUser.findByIdAndUpdate(user._id, {
-    refreshTokens: [
-      ...validTokens,
-      { token: refreshToken, expiresAt: getRefreshTokenExpiry() },
-    ],
+    isVerified: true,
+    lastActiveAt: now,
+    refreshTokens: updatedTokens,
   });
 
   // Set httpOnly cookies
@@ -119,6 +132,8 @@ export const verifyOtp = asyncHandler(async (req: Request<{}, {}, VerifyOtpInput
       user: {
         id: user._id,
         email: user.email,
+        fullName: user.fullName || "",
+        avatar: user.avatar || null,
         hasOnboarded: user.hasOnboarded,
       },
       isNewUser,
@@ -178,9 +193,28 @@ export const refreshToken = asyncHandler(
       throw new AppError("Refresh token not found or expired", 401);
     }
 
+    const now = new Date();
     const newAccessToken = generateAccessToken(user._id.toString());
+    const newRefreshToken = generateRefreshToken(user._id.toString());
+
+    let updatedTokens = (user.refreshTokens ?? [])
+      .filter((rt) => rt.token !== refreshTokenFromCookie && rt.expiresAt > now)
+      .concat({ token: newRefreshToken, createdAt: now, expiresAt: getRefreshTokenExpiry() });
+
+    const MAX_ACTIVE_SESSIONS = 5;
+    if (updatedTokens.length > MAX_ACTIVE_SESSIONS) {
+      updatedTokens = updatedTokens
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, MAX_ACTIVE_SESSIONS);
+    }
+
+    await AuthUser.findByIdAndUpdate(user._id, {
+      lastActiveAt: now,
+      refreshTokens: updatedTokens,
+    });
 
     res.cookie(COOKIE_NAMES.accessToken, newAccessToken, getAccessTokenCookieOptions());
+    res.cookie(COOKIE_NAMES.refreshToken, newRefreshToken, getRefreshTokenCookieOptions());
 
     res.status(200).json({
       success: true,
@@ -197,10 +231,15 @@ export const refreshToken = asyncHandler(
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   const refreshTokenFromCookie = req.cookies[COOKIE_NAMES.refreshToken];
 
-  if (refreshTokenFromCookie) {
-    await AuthUser.findByIdAndUpdate(req.user!.userId, {
-      $pull: { refreshTokens: { token: refreshTokenFromCookie } },
-    });
+  if (req.user?.userId) {
+    const user = await AuthUser.findById(req.user.userId).select("+refreshTokens");
+    if (user) {
+      const now = new Date();
+      user.refreshTokens = (user.refreshTokens ?? []).filter(
+        (rt) => rt.token !== refreshTokenFromCookie && rt.expiresAt > now
+      );
+      await user.save();
+    }
   }
 
   res.clearCookie(COOKIE_NAMES.accessToken, { path: "/" });
@@ -246,6 +285,8 @@ export const getCurrentUser = asyncHandler(
         user: {
           id: user._id,
           email: user.email,
+          fullName: user.fullName || "",
+          avatar: user.avatar || null,
           hasOnboarded: user.hasOnboarded,
           isActive: user.isActive,
         },

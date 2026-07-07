@@ -9,7 +9,7 @@ const AppLayout: React.FC = () => {
       style={{ backgroundColor: theme.colors.surface.bg }}
       className="flex flex-col min-h-screen relative"
     >
-      <main className="flex-1 p-[5%] pb-[14vh] overflow-y-auto">
+      <main className="flex-1 p-[4%] pb-[14vh]">
         <Outlet />
       </main>
       <div className="fixed bottom-[2vh] left-0 right-0 z-40 flex justify-center pointer-events-none">

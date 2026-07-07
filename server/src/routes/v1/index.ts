@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { authRoutes } from "../../modules/auth";
-import { userRoutes } from "../../modules/user";
+import { authRoutes, profileRoutes } from "../../modules/auth";
+import { journalRoutes } from "../../modules/journal";
+import { userSharingRoutes } from "../../modules/userSharing";
 
 const router = Router();
 
@@ -8,6 +9,12 @@ const router = Router();
 router.use("/auth", authRoutes);
 
 // Profile routes
-router.use("/user", userRoutes);
+router.use("/profile", profileRoutes);
+
+// Journal routes
+router.use("/journal", journalRoutes);
+
+// Contacts (UserSharing) routes
+router.use("/contacts", userSharingRoutes);
 
 export default router;

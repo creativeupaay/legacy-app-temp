@@ -2,7 +2,16 @@ import { Document, Types } from "mongoose";
 
 export interface IAuthUser {
   email: string;
+  fullName: string;
+  avatar: string | null;
   hasOnboarded: boolean;
+  isVerified: boolean;
+  lastActiveAt: Date | null;
+  trigger: {
+    inactivityDays: number;
+    status: "not_triggered" | "triggered";
+    triggeredAt: Date | null;
+  };
   refreshTokens: IRefreshToken[];
   isActive: boolean;
   createdAt: Date;
@@ -65,6 +74,8 @@ export interface IAuthResponse {
     user: {
       id: string;
       email: string;
+      fullName: string;
+      avatar: string | null;
       hasOnboarded: boolean;
     };
     isNewUser: boolean;
@@ -78,6 +89,8 @@ export interface ICurrentUserResponse {
     user: {
       id: string;
       email: string;
+      fullName: string;
+      avatar: string | null;
       hasOnboarded: boolean;
       isActive: boolean;
     };

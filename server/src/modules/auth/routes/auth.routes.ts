@@ -42,6 +42,7 @@ const verifyOtpLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+
 // Public routes
 router.post("/request-otp", requestOtpLimiter, validate(requestOtpSchema), requestOtp);
 router.post("/verify-otp", verifyOtpLimiter, validate(verifyOtpSchema), verifyOtp);

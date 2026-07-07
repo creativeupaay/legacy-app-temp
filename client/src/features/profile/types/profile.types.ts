@@ -2,19 +2,15 @@
 
 export interface IProfile {
   id: string;
-  firstName: string;
-  lastName: string;
   fullName: string;
-  phone?: string;
-  avatar?: string;
   email: string;
+  avatar?: string | null;
+  createdAt?: string;
 }
 
 export interface IUpdateProfileRequest {
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  avatar?: string;
+  fullName?: string;
+  avatar?: string | null;
 }
 
 export interface IProfileResponse {
@@ -23,4 +19,25 @@ export interface IProfileResponse {
   data?: {
     profile: IProfile;
   };
+}
+
+export interface IProfileInsights {
+  memories: number;
+  streak: number;
+  recipients: number;
+  sharedMemories: number;
+}
+
+export interface IProfileInsightsResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    insights: IProfileInsights;
+  };
+}
+
+export interface IUploadImageResponse {
+  success: boolean;
+  message: string;
+  data: null;
 }

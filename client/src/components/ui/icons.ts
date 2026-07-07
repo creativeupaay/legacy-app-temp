@@ -1,5 +1,25 @@
 import React from "react";
-import { ArrowRight, Play, ChevronRight, Plus, Lock, Zap, type LucideIcon, type LucideProps } from "lucide-react";
+import {
+  ArrowRight,
+  Play,
+  ChevronRight,
+  ChevronLeft,
+  Plus,
+  Lock,
+  Zap,
+  Search,
+  Calendar,
+  Check,
+  User,
+  Users,
+  Globe,
+  X,
+  SquarePen,
+  Mic,
+  type LucideIcon,
+  type LucideProps,
+} from "lucide-react";
+
 export const ArrowRightIcon: React.FC<LucideProps> = ({
   size = 24,
   className = "",
@@ -10,6 +30,7 @@ export const ArrowRightIcon: React.FC<LucideProps> = ({
     className: `shrink-0 aspect-square ${className}`.trim(),
     ...props,
   });
+
 export const PlayIcon: React.FC<LucideProps> = ({
   size = 24,
   className = "",
@@ -20,5 +41,24 @@ export const PlayIcon: React.FC<LucideProps> = ({
     className: `shrink-0 aspect-square ${className}`.trim(),
     ...props,
   });
-export { ArrowRight, Play, ChevronRight, Plus, Lock, Zap };
+
+export {
+  ArrowRight,
+  Play,
+  ChevronRight,
+  ChevronLeft,
+  Plus,
+  Lock,
+  Zap,
+  Search,
+  Calendar,
+  Check,
+  User,
+  Users,
+  Globe,
+  X,
+  SquarePen,
+  Mic,
+};
 export type { LucideIcon, LucideProps };
+

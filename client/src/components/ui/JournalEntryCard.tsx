@@ -17,6 +17,20 @@ const WAVEFORM_PLACEHOLDER_HEIGHTS = [
   80, 35, 65, 90, 45, 70, 85, 40, 60, 75, 50, 85, 35, 70, 90, 45, 80, 60,
 ];
 
+const stripHtml = (html?: string): string => {
+  if (!html) return "";
+  return html
+    .replace(/<[^>]*>?/gm, "")          // remove all HTML tags
+    .replace(/&nbsp;/g, " ")            // non-breaking space → regular space
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .trim();
+};
+
 export const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
   entryId,
   heading,
@@ -31,7 +45,7 @@ export const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
       data-entry-id={entryId}
       data-audio-url={audioUrl}
       style={{ backgroundColor: theme.colors.surface.default }}
-      className="rounded-[7px] w-full max-w-[380px] min-h-[78px] px-[10px] py-[11px] grid grid-rows-[auto_auto] grid-cols-[1fr_auto] gap-y-[8px] cursor-pointer hover:shadow-sm transition-shadow overflow-hidden box-border"
+      className="rounded-[16px] w-full min-h-[88px] px-[18px] py-[16px] grid grid-rows-[auto_auto] grid-cols-[1fr_auto] gap-y-[10px] cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 overflow-hidden box-border"
     >
       {/* Title — row-start: 1, col-start: 1, col-span: 1, min-h: 16px */}
       <p
@@ -39,15 +53,15 @@ export const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
           color: theme.colors.text.primary,
           fontFamily: theme.fonts.heading,
         }}
-        className="col-start-1 col-span-1 row-start-1 row-span-1 min-h-[16px] leading-tight font-semibold text-[16px] tracking-[-0.16px] truncate m-0 self-center"
+        className="col-start-1 col-span-1 row-start-1 row-span-1 min-h-[20px] leading-snug font-bold text-[16.5px] tracking-[-0.2px] truncate m-0 self-center"
       >
         {heading}
       </p>
 
       {/* Chevron — row-start: 1, col-start: 2 */}
-      <div className="col-start-2 row-start-1 self-center flex items-center justify-end pl-1">
+      <div className="col-start-2 row-start-1 self-center flex items-center justify-end pl-2">
         <ChevronRight
-          size={16}
+          size={18}
           style={{ color: theme.colors.icon.muted }}
           className="shrink-0"
         />
@@ -60,9 +74,9 @@ export const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
             color: theme.colors.text.secondary,
             fontFamily: theme.fonts.sans,
           }}
-          className="col-start-1 col-span-2 row-start-2 row-span-1 w-full min-h-[32px] text-[12px] tracking-[0.24px] leading-[16px] line-clamp-2 m-0 overflow-hidden"
+          className="col-start-1 col-span-2 row-start-2 row-span-1 w-full min-h-[36px] text-[13.5px] tracking-[0.1px] leading-[20px] line-clamp-2 m-0 overflow-hidden"
         >
-          {bodyText}
+          {stripHtml(bodyText)}
         </p>
       ) : (
         /* Waveform placeholder — centered vertical bars spanning 100% of inner card width (col-span-2) */

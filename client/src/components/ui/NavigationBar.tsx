@@ -130,7 +130,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
         backgroundColor: theme.colors.surface.nav,
         borderColor: theme.colors.stroke.nav,
       }}
-      className="flex items-center justify-between gap-2 h-[6.5vh] min-h-[48px] max-h-[56px] w-[63%] min-w-[220px] max-w-[248px] rounded-full border shadow-[0_4px_14px_rgba(0,0,0,0.15)]"
+      className="flex items-center justify-between gap-2 h-[6.5vh] min-h-[48px] max-h-[56px] w-[63%] min-w-[220px] max-w-[340px] rounded-full border shadow-[0_4px_14px_rgba(0,0,0,0.15)]"
     >
       {NAV_ITEMS.map((item) => {
         const isActive = currentTab === item.id;
