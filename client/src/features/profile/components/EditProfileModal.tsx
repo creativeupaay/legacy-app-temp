@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Avatar } from "@/components/ui";
+import { Avatar, Button, IconButton } from "@/components/ui";
 import { theme } from "@/theme/theme";
 import type { IProfile } from "../types/profile.types";
-import { Camera, X } from "lucide-react";
+import { Camera } from "lucide-react";
 
 export interface EditProfileModalProps {
   isOpen: boolean;
@@ -78,54 +78,79 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const email = profile?.email || "";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
       <div
-        style={{ backgroundColor: theme.colors.surface.default }}
-        className="w-full max-w-sm rounded-[24px] p-6 shadow-xl border border-gray-100 flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-200 relative"
+        style={{
+          backgroundColor: theme.colors.surface.default,
+          borderColor: theme.colors.stroke.border,
+        }}
+        className="w-full max-w-[340px] sm:max-w-[380px] rounded-[24px] p-5 sm:p-6 shadow-xl border flex flex-col gap-4 sm:gap-5 animate-in zoom-in-95 duration-200 relative box-border"
       >
         <div className="flex items-center justify-between">
           <h3
             style={{ fontFamily: theme.fonts.heading, color: theme.colors.text.primary }}
-            className="text-lg font-bold"
+            className="text-[16px] sm:text-[18px] font-bold tracking-tight m-0"
           >
             Edit Profile
           </h3>
-          <button
-            type="button"
+          <IconButton
+            variant="close"
             onClick={onClose}
+            aria-label="Close edit profile modal"
             disabled={isLoading || isUploading}
-            className="p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          />
         </div>
 
         {error && (
-          <div className="text-xs text-red-600 bg-red-50 p-3 rounded-xl border border-red-200">
-            {error}
+          <div
+            style={{
+              backgroundColor: theme.colors.surface.elevated,
+              borderColor: theme.colors.primary.motivationBorder,
+              color: theme.colors.text.primary,
+            }}
+            className="text-xs p-3 rounded-xl border font-medium shadow-sm flex items-center gap-2"
+          >
+            <span
+              style={{
+                backgroundColor: theme.colors.primary.motivation,
+                color: theme.colors.primary.action,
+              }}
+              className="w-4 h-4 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0"
+            >
+              !
+            </span>
+            <span>{error}</span>
           </div>
         )}
 
         {uploadNotice && (
-          <div className="text-xs text-blue-700 bg-blue-50 p-3 rounded-xl border border-blue-200">
+          <div
+            style={{
+              backgroundColor: theme.colors.surface.primary,
+              borderColor: theme.colors.stroke.blue,
+              color: theme.colors.primary.action,
+            }}
+            className="text-xs p-3 rounded-xl border font-medium shadow-sm"
+          >
             {uploadNotice}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col items-center justify-center gap-2 my-2">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 sm:gap-4">
+          <div className="flex flex-col items-center justify-center gap-1.5 my-1">
             <div className="relative group cursor-pointer">
               <Avatar
                 src={previewImage || undefined}
                 name={fullName}
-                size="lg"
-                className="w-20 h-20 rounded-full text-2xl font-bold border-2 border-[#2B7FCE]/20 shadow-sm"
+                size="md"
+                className="w-16 h-16 sm:w-18 sm:h-18 rounded-full text-lg sm:text-xl font-bold border-2 shadow-sm"
+                style={{ borderColor: theme.colors.stroke.yellow }}
               />
               <label
                 htmlFor="avatar-upload"
                 className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
               >
-                <Camera className="w-6 h-6" />
+                <Camera className="w-5 h-5" />
               </label>
               <input
                 id="avatar-upload"
@@ -137,19 +162,19 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
               />
             </div>
             <span
-              style={{ color: theme.colors.text.secondary }}
-              className="text-xs font-medium"
+              style={{ color: theme.colors.text.secondary, fontFamily: theme.fonts.sans }}
+              className="text-[11px] sm:text-xs font-medium px-2.5 py-0.5 rounded-full bg-black/[0.04]"
             >
-              {isUploading ? "Uploading image..." : "Tap photo to change"}
+              {isUploading ? "Uploading..." : "Tap photo to change"}
             </span>
           </div>
 
           <div>
             <label
-              style={{ color: theme.colors.text.secondary }}
-              className="block text-xs font-semibold uppercase tracking-wider mb-1"
+              style={{ color: theme.colors.text.secondary, fontFamily: theme.fonts.sans }}
+              className="block text-[11px] sm:text-xs font-semibold mb-1 tracking-tight"
             >
-              Full Name *
+              Full Name
             </label>
             <input
               type="text"
@@ -158,47 +183,62 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Your full name"
               disabled={isLoading || isUploading}
-              className="w-full text-sm py-2.5 px-3.5 rounded-xl border border-gray-200 outline-none focus:border-[#2B7FCE] transition-colors font-medium"
+              style={{
+                backgroundColor: theme.colors.surface.elevated,
+                borderColor: theme.colors.stroke.border,
+                color: theme.colors.text.primary,
+              }}
+              className="w-full text-[13px] sm:text-sm py-2 px-3 sm:px-3.5 rounded-xl border outline-none transition-all font-medium focus:ring-2 focus:ring-[#1C274C]/10 box-border"
             />
           </div>
 
           <div>
-            <label
-              style={{ color: theme.colors.text.secondary }}
-              className="block text-xs font-semibold uppercase tracking-wider mb-1"
-            >
-              Email Address (Read-Only)
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label
+                style={{ color: theme.colors.text.secondary, fontFamily: theme.fonts.sans }}
+                className="block text-[11px] sm:text-xs font-semibold tracking-tight"
+              >
+                Email Address
+              </label>
+              <span
+                style={{ color: theme.colors.text.tertiary || "#A1A1AA" }}
+                className="text-[10px] font-medium"
+              >
+                Read-only
+              </span>
+            </div>
             <input
               type="email"
               readOnly
               value={email}
               disabled
-              className="w-full text-sm py-2.5 px-3.5 rounded-xl border border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed font-medium select-none"
+              style={{
+                backgroundColor: theme.colors.surface.neutral,
+                borderColor: theme.colors.stroke.border,
+                color: theme.colors.text.secondary,
+              }}
+              className="w-full text-[13px] sm:text-sm py-2 px-3 sm:px-3.5 rounded-xl border cursor-not-allowed font-medium select-none box-border"
             />
           </div>
 
-          <div className="flex items-center gap-3 mt-3 pt-2">
-            <button
+          <div className="flex items-center gap-2.5 sm:gap-3 mt-2 pt-1">
+            <Button
+              variant="secondary"
               type="button"
               onClick={onClose}
               disabled={isLoading || isUploading}
-              style={{ color: theme.colors.text.secondary }}
-              className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold transition-opacity hover:opacity-80 cursor-pointer"
+              className="flex-1 !text-[13px] !py-2.5 !px-2 !rounded-xl font-semibold whitespace-nowrap tracking-tight shrink-0"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
               type="submit"
               disabled={isLoading || isUploading}
-              style={{
-                backgroundColor: theme.colors.primary.action,
-                color: theme.colors.text.inverse,
-              }}
-              className="flex-1 py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90 cursor-pointer disabled:opacity-50 flex items-center justify-center shadow-sm"
+              className="flex-1 !text-[13px] !py-2.5 !px-2 !rounded-xl font-semibold whitespace-nowrap tracking-tight shrink-0"
             >
               {isLoading ? "Saving..." : "Save Changes"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

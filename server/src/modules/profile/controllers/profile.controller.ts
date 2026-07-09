@@ -3,11 +3,6 @@ import asyncHandler from "../../../utils/asyncHandler";
 import AppError from "../../../utils/appError";
 import { ProfileService } from "../services/profile.service";
 
-/**
- * @desc    Get current user profile
- * @route   GET /api/v1/profile (or /api/v1/profile/me)
- * @access  Private
- */
 export const getProfile = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   if (!userId) {
@@ -25,11 +20,6 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-/**
- * @desc    Update current user profile
- * @route   PATCH /api/v1/profile (or PUT /api/v1/profile/me)
- * @access  Private
- */
 export const updateProfile = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   if (!userId) {
@@ -47,11 +37,6 @@ export const updateProfile = asyncHandler(async (req: Request, res: Response) =>
   });
 });
 
-/**
- * @desc    Upload profile image
- * @route   POST /api/v1/profile/upload-image
- * @access  Private
- */
 export const uploadProfileImage = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   if (!userId) {
@@ -71,11 +56,6 @@ export const uploadProfileImage = asyncHandler(async (req: Request, res: Respons
   });
 });
 
-/**
- * @desc    Get profile insights
- * @route   GET /api/v1/profile/insights
- * @access  Private
- */
 export const getProfileInsights = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   if (!userId) {

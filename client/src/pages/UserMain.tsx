@@ -1,8 +1,9 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import { AuthWrapper } from "@/features/auth";
 import AuthFlow from "@/features/auth/components/AuthFlow";
 import { AppLayout } from "@/components/layout";
 import HomePage from "./home/HomePage";
+import StreakCalendarPage from "./home/StreakCalendarPage";
 import JournalPage from "./journal/JournalPage";
 import JournalWritePage from "./journal/JournalWritePage";
 import PrivacySelectionPage from "./journal/PrivacySelectionPage";
@@ -10,8 +11,15 @@ import MemoriesPage from "./memories/MemoriesPage";
 import ProfilePage from "./profile/ProfilePage";
 import SettingsPage from "./profile/SettingsPage";
 import SharingPage from "./profile/SharingPage";
+import AddRecipientPage from "./profile/AddRecipientPage";
 import OnboardingPage from "./onboarding/OnboardingPage";
 import { useAppSelector } from "@/app/hooks";
+
+
+const FolderRedirect: React.FC = () => {
+  const { folderId } = useParams<{ folderId: string }>();
+  return <Navigate to={`/journal?folder=${folderId}`} replace />;
+};
 
 
 const OnboardingGuard: React.FC<{ children: React.ReactNode }> = ({
@@ -59,6 +67,14 @@ const UserMain = () => {
         }
       />
       <Route
+        path="/streak-calendar"
+        element={
+          <AuthWrapper routeType="private" redirectPath="/login">
+            <StreakCalendarPage />
+          </AuthWrapper>
+        }
+      />
+      <Route
         path="/journal/privacy"
         element={
           <AuthWrapper routeType="private" redirectPath="/login">
@@ -67,10 +83,26 @@ const UserMain = () => {
         }
       />
       <Route
+        path="/profile/add-recipient"
+        element={
+          <AuthWrapper routeType="private" redirectPath="/login">
+            <AddRecipientPage />
+          </AuthWrapper>
+        }
+      />
+      <Route
         path="/journal/:entryId"
         element={
           <AuthWrapper routeType="private" redirectPath="/login">
             <JournalWritePage />
+          </AuthWrapper>
+        }
+      />
+      <Route
+        path="/journal-folders/:folderId"
+        element={
+          <AuthWrapper routeType="private" redirectPath="/login">
+            <FolderRedirect />
           </AuthWrapper>
         }
       />

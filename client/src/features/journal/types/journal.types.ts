@@ -11,6 +11,7 @@ export interface IJournalEntry {
   id: string;
   _id?: string;
   ownerId?: string;
+  folderId?: string | null;
   title: string;
   textBody: string;
   privacy: EntryPrivacy;
@@ -26,6 +27,7 @@ export interface ICreateEntryRequest {
   privacy: EntryPrivacy;
   sharedWith?: string[];
   entryDate?: string;
+  folderId?: string | null;
 }
 
 export interface IUpdateEntryRequest {
@@ -34,6 +36,7 @@ export interface IUpdateEntryRequest {
   privacy?: EntryPrivacy;
   sharedWith?: string[];
   entryDate?: string;
+  folderId?: string | null;
 }
 
 export interface IListEntriesResponse {

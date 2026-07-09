@@ -39,7 +39,7 @@ export function useJournalEditor(mode: "create" | "view" | "edit") {
     []
   );
   const quillFormats = useMemo(
-    () => ["header", "bold", "italic", "underline", "color"],
+    () => ["header", "size", "bold", "italic", "underline", "color"],
     []
   );
 
@@ -47,16 +47,20 @@ export function useJournalEditor(mode: "create" | "view" | "edit") {
   const toggleFormat = (format: "bold" | "italic" | "underline") => {
     const quill = quillRef.current?.getEditor();
     if (!quill) return;
+    quill.focus();
     quill.format(format, !quill.getFormat()[format]);
+    setActiveFormats(quill.getFormat() || {});
   };
 
   const toggleHeading = () => {
     const quill = quillRef.current?.getEditor();
     if (!quill) return;
-    const h = quill.getFormat().header;
-    if (h === 1) quill.format("header", 2);
-    else if (h === 2) quill.format("header", false);
-    else quill.format("header", 1);
+    quill.focus();
+    const s = quill.getFormat().size;
+    if (s === "large") quill.format("size", "huge");
+    else if (s === "huge") quill.format("size", false);
+    else quill.format("size", "large");
+    setActiveFormats(quill.getFormat() || {});
   };
 
   const handleUndo = () => {

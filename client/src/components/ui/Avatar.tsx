@@ -7,6 +7,7 @@ export interface AvatarProps {
   name?: string;
   size?: "sm" | "md" | "lg";
   className?: string;
+  style?: React.CSSProperties;
 }
 
 const SIZE_CLASSES = {
@@ -20,6 +21,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   name,
   size = "md",
   className = "",
+  style,
 }) => {
   const getInitials = (str?: string) => {
     if (!str) return null;
@@ -38,6 +40,7 @@ export const Avatar: React.FC<AvatarProps> = ({
         backgroundColor: theme.colors.surface.neutral,
         color: theme.colors.text.primary,
         fontFamily: theme.fonts.heading,
+        ...style,
       }}
       className={`rounded-full flex items-center justify-center font-semibold overflow-hidden shrink-0 border border-black/5 ${SIZE_CLASSES[size]} ${className}`.trim()}
     >

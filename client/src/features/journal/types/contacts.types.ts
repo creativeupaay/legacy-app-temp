@@ -5,6 +5,7 @@ export interface IContact {
   recipientUserId?: string;
   name: string;
   email: string;
+  avatar?: string | null;
   relationship?: string;
   createdAt?: string | Date;
   updatedAt?: string | Date;

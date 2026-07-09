@@ -47,7 +47,7 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-full mx-auto space-y-5 sm:space-y-6 pt-3 sm:pt-4 pb-24 sm:pb-28 animate-in fade-in duration-200">
+    <div className="w-full max-w-full mx-auto flex flex-col gap-8 sm:gap-10 pt-3 sm:pt-4 pb-24 sm:pb-28 animate-in fade-in duration-200">
       <ProfileCard
         profile={profile}
         isLoading={isLoadingProfile}
@@ -76,6 +76,23 @@ const ProfilePage: React.FC = () => {
         onUploadImage={handleUploadImage}
         isLoading={isUpdating}
       />
+
+      {/* Bottom Blur Overlay constrained to app width (max-w-[480px]) */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 flex justify-center pointer-events-none">
+        <div
+          className="w-full max-w-[480px] h-[140px] pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(242, 243, 238, 0) 0%, rgba(242, 243, 238, 0.4) 55%, rgba(242, 243, 238, 0.88) 100%)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            maskImage:
+              "linear-gradient(to bottom, transparent 0%, black 50%, black 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, transparent 0%, black 50%, black 100%)",
+          }}
+        />
+      </div>
     </div>
   );
 };

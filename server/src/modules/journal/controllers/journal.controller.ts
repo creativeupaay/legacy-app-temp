@@ -11,6 +11,8 @@ import {
 } from "../validators/journal.validator";
 
 
+import JournalFolder from "../../journalFolder/models/journalFolder.model";
+
 function toEntryResponse(doc: IJournalEntryDocument): IEntryResponse {
   return {
     id: doc._id.toString(),
@@ -19,23 +21,42 @@ function toEntryResponse(doc: IJournalEntryDocument): IEntryResponse {
     privacy: doc.privacy,
     sharedWith: doc.sharedWith.map((id) => id.toString()),
     entryDate: doc.entryDate,
+    folderId: doc.folderId ? doc.folderId.toString() : null,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };
 }
 
-
 export const createEntry = asyncHandler(
   async (req: Request<{}, {}, CreateEntryInput>, res: Response) => {
-    const { title, textBody, privacy, sharedWith, entryDate } = req.body;
+    const { title, textBody, privacy, sharedWith, entryDate, folderId } =
+      req.body;
+
+    let validFolderId: mongoose.Types.ObjectId | null = null;
+    if (folderId && folderId !== "null") {
+      if (!mongoose.isValidObjectId(folderId)) {
+        throw new AppError("Invalid folder ID", 400);
+      }
+      const folder = await JournalFolder.findOne({
+        _id: folderId,
+        ownerId: req.user!.userId,
+      });
+      if (!folder) {
+        throw new AppError("Invalid or unauthorized folder ID", 400);
+      }
+      validFolderId = new mongoose.Types.ObjectId(folderId);
+    }
 
     const entry = await Journal.create({
       ownerId: req.user!.userId,
       title,
       textBody,
       privacy,
-      sharedWith: (sharedWith ?? []).map((id) => new mongoose.Types.ObjectId(id)),
-      entryDate: entryDate ? new Date(entryDate) : undefined, // defaults to Date.now via schema
+      sharedWith: (sharedWith ?? []).map(
+        (id) => new mongoose.Types.ObjectId(id)
+      ),
+      entryDate: entryDate ? new Date(entryDate) : undefined,
+      folderId: validFolderId,
     });
 
     res.status(201).json({
@@ -58,10 +79,17 @@ export const listEntries = asyncHandler(async (req: Request, res: Response) => {
     );
   }
 
-  const { page, limit, privacy } = queryResult.data;
+  const { page, limit, privacy, folderId } = queryResult.data;
 
   const filter: Record<string, unknown> = { ownerId: req.user!.userId };
   if (privacy) filter.privacy = privacy;
+  if (folderId !== undefined) {
+    if (folderId === null || folderId === "null") {
+      filter.folderId = null;
+    } else if (mongoose.isValidObjectId(folderId)) {
+      filter.folderId = new mongoose.Types.ObjectId(folderId);
+    }
+  }
 
   const [entries, total] = await Promise.all([
     Journal.find(filter)
@@ -124,6 +152,23 @@ export const updateEntry = asyncHandler(
     if (req.body.privacy !== undefined) updates.privacy = req.body.privacy;
     if (req.body.sharedWith !== undefined) updates.sharedWith = req.body.sharedWith;
     if (req.body.entryDate !== undefined) updates.entryDate = new Date(req.body.entryDate);
+    if (req.body.folderId !== undefined) {
+      if (req.body.folderId && req.body.folderId !== "null") {
+        if (!mongoose.isValidObjectId(req.body.folderId)) {
+          throw new AppError("Invalid folder ID", 400);
+        }
+        const folder = await JournalFolder.findOne({
+          _id: req.body.folderId,
+          ownerId: req.user!.userId,
+        });
+        if (!folder) {
+          throw new AppError("Invalid or unauthorized folder ID", 400);
+        }
+        updates.folderId = new mongoose.Types.ObjectId(req.body.folderId);
+      } else {
+        updates.folderId = null;
+      }
+    }
 
    
     const updated = await Journal.findOneAndUpdate(

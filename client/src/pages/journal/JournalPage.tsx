@@ -1,9 +1,18 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { theme } from "@/theme/theme";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import {
   useGetJournalEntriesQuery,
 } from "@/features/journal/api/journalApi";
+import {
+  useGetJournalFoldersQuery,
+  useUpdateJournalFolderMutation,
+  useDeleteJournalFolderMutation,
+} from "@/features/journal/api/journalFolderApi";
+import { CreateFolderBottomSheet } from "@/features/home/components/CreateFolderBottomSheet";
+import { DeleteFolderBottomSheet } from "@/features/home/components/DeleteFolderBottomSheet";
+import type { DeleteFolderAction } from "@/features/journal/types/journalFolder.types";
 import {
   setIsBottomSheetOpen,
   resetDraft,
@@ -43,6 +52,30 @@ const JournalPage: React.FC = () => {
   );
 
   const [privacyFilter, setPrivacyFilter] = React.useState<"all" | "private" | "shared">("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const folderParam = searchParams.get("folder");
+
+  const [activeFolderFilter, setActiveFolderFilter] = React.useState<string | null>(
+    folderParam && folderParam !== "all" ? folderParam : null
+  );
+
+  React.useEffect(() => {
+    if (folderParam === "all" || !folderParam) {
+      setActiveFolderFilter(null);
+    } else {
+      setActiveFolderFilter(folderParam);
+    }
+  }, [folderParam]);
+
+  const handleFolderFilterChange = (filterId: string | null) => {
+    setActiveFolderFilter(filterId);
+    if (filterId === null || filterId === "all") {
+      setSearchParams({ folder: "all" });
+    } else {
+      setSearchParams({ folder: filterId });
+    }
+  };
+
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isCalendarMounted, setIsCalendarMounted] = React.useState(false);
@@ -50,15 +83,51 @@ const JournalPage: React.FC = () => {
   const [selectedDateStr, setSelectedDateStr] = React.useState<string | null>(null);
 
   const { data: entries = [], isLoading } = useGetJournalEntriesQuery();
+  const { data: folders = [] } = useGetJournalFoldersQuery();
+
+  const [updateFolder] = useUpdateJournalFolderMutation();
+  const [deleteFolder] = useDeleteJournalFolderMutation();
+  const [isEditFolderOpen, setIsEditFolderOpen] = React.useState(false);
+  const [isDeleteFolderOpen, setIsDeleteFolderOpen] = React.useState(false);
+
+  const selectedFolderObj = React.useMemo(() => {
+    if (!activeFolderFilter || activeFolderFilter === "all") return null;
+    return folders.find((f) => f.id === activeFolderFilter) || null;
+  }, [activeFolderFilter, folders]);
+
+  const handleEditFolderSave = async (data: { name: string; color: string; iconId: string }) => {
+    if (!selectedFolderObj?.id) return;
+    try {
+      await updateFolder({
+        id: selectedFolderObj.id,
+        data: { name: data.name, color: data.color, icon: data.iconId },
+      }).unwrap();
+      setIsEditFolderOpen(false);
+    } catch (err) {
+      console.error("Failed to update folder:", err);
+    }
+  };
+
+  const handleDeleteFolderConfirm = async (action: DeleteFolderAction) => {
+    if (!selectedFolderObj?.id) return;
+    try {
+      await deleteFolder({ id: selectedFolderObj.id, action }).unwrap();
+      setIsDeleteFolderOpen(false);
+      handleFolderFilterChange(null);
+    } catch (err) {
+      console.error("Failed to delete folder:", err);
+    }
+  };
 
   const allCount = entries.length;
-  // Dummy counts for folder chips (to be replaced with actual folder counts from home page later)
-  const memoriesCount = 1;
-  const dailyNotesCount = 2;
-  const travelCount = 2;
 
   const displayedEntries = React.useMemo(() => {
     return entries.filter((e) => {
+      // 0. Folder filter
+      if (activeFolderFilter !== null && activeFolderFilter !== "all") {
+        if (e.folderId !== activeFolderFilter) return false;
+      }
+
       // 1. Privacy filter ("all", "private", "shared")
       if (privacyFilter === "private") {
         const isPrivate =
@@ -89,7 +158,7 @@ const JournalPage: React.FC = () => {
 
       return true;
     });
-  }, [entries, privacyFilter, searchQuery, selectedDateStr]);
+  }, [entries, activeFolderFilter, privacyFilter, searchQuery, selectedDateStr]);
 
   const handleOpenBottomSheet = () => {
     dispatch(setIsBottomSheetOpen(true));
@@ -149,8 +218,10 @@ const JournalPage: React.FC = () => {
       {/* ── Sticky Header: search bar + filter chips stay pinned on scroll ── */}
       <div
         style={{
-          backgroundColor: "#F2F3EE",
+          backgroundColor: theme.colors.surface.mainBg,
           boxShadow: "0 4px 16px rgba(0,0,0,0.0)",
+          margin: "-4.35% -4.35% 0 -4.35%",
+          paddingTop: "4.35%",
         }}
         className="sticky top-0 z-20 transition-shadow duration-200"
         id="journal-sticky-header"
@@ -163,14 +234,17 @@ const JournalPage: React.FC = () => {
           onSearchToggle={setIsSearchOpen}
           onSearchClick={() => setIsSearchOpen(true)}
           onCalendarClick={handleToggleCalendar}
+          showFolderActions={!!selectedFolderObj}
+          onEditFolder={() => setIsEditFolderOpen(true)}
+          onDeleteFolder={() => setIsDeleteFolderOpen(true)}
         />
 
         {/* Filter Bar */}
         <JournalFilterBar
           allCount={allCount}
-          memoriesCount={memoriesCount}
-          dailyNotesCount={dailyNotesCount}
-          travelCount={travelCount}
+          folders={folders}
+          activeFilter={activeFolderFilter}
+          onFilterChange={handleFolderFilterChange}
           onAddNewClick={handleOpenBottomSheet}
         />
       </div>
@@ -223,20 +297,22 @@ const JournalPage: React.FC = () => {
         )}
       </div>
 
-      {/* ── Bottom Blur Overlay: smoothly blurs entries scrolling behind the navbar and filter pills ── */}
-      <div
-        className="fixed bottom-0 left-0 right-0 h-[170px] z-20 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(242, 243, 238, 0) 0%, rgba(242, 243, 238, 0.75) 45%, rgba(242, 243, 238, 0.95) 100%)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          maskImage:
-            "linear-gradient(to bottom, transparent 0%, black 40%, black 100%)",
-          WebkitMaskImage:
-            "linear-gradient(to bottom, transparent 0%, black 40%, black 100%)",
-        }}
-      />
+      {/* ── Bottom Blur Overlay constrained to app width (max-w-[480px]) ── */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 flex justify-center pointer-events-none">
+        <div
+          className="w-full max-w-[480px] h-[140px] pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(242, 243, 238, 0) 0%, rgba(242, 243, 238, 0.4) 55%, rgba(242, 243, 238, 0.88) 100%)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            maskImage:
+              "linear-gradient(to bottom, transparent 0%, black 50%, black 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, transparent 0%, black 50%, black 100%)",
+          }}
+        />
+      </div>
 
       {/* Privacy Segmented Control Filter */}
       <PrivacySegmentedFilter
@@ -293,6 +369,32 @@ const JournalPage: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit Folder Bottom Sheet */}
+      {selectedFolderObj && (
+        <CreateFolderBottomSheet
+          isOpen={isEditFolderOpen}
+          onClose={() => setIsEditFolderOpen(false)}
+          onSave={handleEditFolderSave}
+          initialData={{
+            id: selectedFolderObj.id,
+            name: selectedFolderObj.name,
+            color: selectedFolderObj.color,
+            iconId: selectedFolderObj.icon,
+          }}
+        />
+      )}
+
+      {/* Delete Folder Bottom Sheet */}
+      {selectedFolderObj && (
+        <DeleteFolderBottomSheet
+          isOpen={isDeleteFolderOpen}
+          onClose={() => setIsDeleteFolderOpen(false)}
+          folderName={selectedFolderObj.name}
+          journalCount={selectedFolderObj.journalCount}
+          onConfirmDelete={handleDeleteFolderConfirm}
+        />
       )}
     </div>
   );

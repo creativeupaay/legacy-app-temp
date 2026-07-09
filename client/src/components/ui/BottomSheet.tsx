@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { theme } from "@/theme/theme";
 
 export interface BottomSheetProps {
@@ -45,7 +46,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     return `relative z-10 w-full max-w-[480px] mx-auto rounded-t-[28px] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] p-6 pt-3 pb-8 transition-transform animate-in slide-in-from-bottom duration-300 ${className}`.trim();
   })();
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
       <div
         onClick={onClose}
@@ -64,7 +65,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         )}
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

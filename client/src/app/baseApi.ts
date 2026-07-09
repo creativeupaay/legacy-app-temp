@@ -11,6 +11,8 @@ const baseQuery = fetchBaseQuery({
   credentials: "include",
 });
 
+let refreshPromise: Promise<unknown> | null = null;
+
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -24,13 +26,23 @@ const baseQueryWithReauth: BaseQueryFn<
     const url = typeof args === "string" ? args : args.url;
     // Attempt silent token refresh if not already calling an auth endpoint
     if (!url.includes("/auth/refresh") && !url.includes("/auth/verify-otp") && !url.includes("/auth/request-otp")) {
-      const refreshResult = await baseQuery(
-        { url: "/auth/refresh", method: "POST", body: {} },
-        api,
-        extraOptions
-      );
+      if (!refreshPromise) {
+        refreshPromise = (async () => {
+          try {
+            return await baseQuery(
+              { url: "/auth/refresh", method: "POST", body: {} },
+              api,
+              extraOptions
+            );
+          } finally {
+            refreshPromise = null;
+          }
+        })();
+      }
 
-      if (refreshResult.data) {
+      const refreshResult = (await refreshPromise) as { data?: unknown };
+
+      if (refreshResult?.data) {
         // Retry original request with the new access token cookie
         result = await baseQuery(args, api, extraOptions);
       } else {
@@ -47,7 +59,7 @@ const baseQueryWithReauth: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Auth", "Profile", "Journal", "Contacts", "Insights"],
+  tagTypes: ["Auth", "Profile", "Journal", "Contacts", "Insights", "JournalFolders"],
   endpoints: () => ({}),
 });
 

@@ -1,4 +1,4 @@
-import AuthUser from "../models/authuser.model";
+import AuthUser from "../../auth/models/authuser.model";
 import Journal from "../../journal/models/journal.model";
 import UserSharing from "../../userSharing/models/userSharing.model";
 import AppError from "../../../utils/appError";
@@ -15,6 +15,8 @@ export interface IProfileData {
 export interface IProfileInsights {
   memories: number;
   streak: number;
+  longestStreak: number;
+  activeDays: string[];
   recipients: number;
   sharedMemories: number;
 }
@@ -81,6 +83,9 @@ export class ProfileService {
 
     // Calculate writing streak (consecutive days)
     let streak = 0;
+    let longestStreak = 0;
+    const activeDays: string[] = [];
+
     if (journalDates && journalDates.length > 0) {
       const uniqueDayStrings = Array.from(
         new Set(
@@ -90,6 +95,29 @@ export class ProfileService {
           })
         )
       ).sort((a, b) => (a < b ? 1 : -1)); // descending order YYYY-MM-DD
+
+      activeDays.push(...uniqueDayStrings);
+
+      // Calculate longest streak
+      if (uniqueDayStrings.length > 0) {
+        let currentLongest = 1;
+        let tempStreak = 1;
+        let prevDate = new Date(`${uniqueDayStrings[0]}T00:00:00Z`);
+
+        for (let i = 1; i < uniqueDayStrings.length; i++) {
+          const currDate = new Date(`${uniqueDayStrings[i]}T00:00:00Z`);
+          const diffDays = Math.round((prevDate.getTime() - currDate.getTime()) / 86400000);
+          
+          if (diffDays === 1) {
+            tempStreak++;
+          } else {
+            tempStreak = 1;
+          }
+          if (tempStreak > currentLongest) currentLongest = tempStreak;
+          prevDate = currDate;
+        }
+        longestStreak = currentLongest;
+      }
 
       const today = new Date();
       const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -121,8 +149,11 @@ export class ProfileService {
     return {
       memories,
       streak,
+      longestStreak,
+      activeDays,
       recipients,
       sharedMemories,
     };
   }
 }
+ 

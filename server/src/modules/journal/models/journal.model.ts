@@ -37,12 +37,18 @@ const JournalSchema = new Schema<IJournalEntryDocument>(
       type: Date,
       default: Date.now,
     },
+    folderId: {
+      type: Schema.Types.ObjectId,
+      ref: "JournalFolder",
+      default: null,
+    },
   },
   { timestamps: true }
 );
 
 // Common list-view query pattern: owner's entries, newest first
 JournalSchema.index({ ownerId: 1, entryDate: -1 });
+JournalSchema.index({ ownerId: 1, folderId: 1 });
 
 const Journal = mongoose.model<IJournalEntryDocument>("Journal", JournalSchema);
 export default Journal;

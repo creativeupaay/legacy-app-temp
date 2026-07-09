@@ -45,13 +45,13 @@ export const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
       data-entry-id={entryId}
       data-audio-url={audioUrl}
       style={{ backgroundColor: theme.colors.surface.default }}
-      className="rounded-[16px] w-full min-h-[88px] px-[18px] py-[16px] grid grid-rows-[auto_auto] grid-cols-[1fr_auto] gap-y-[10px] cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 overflow-hidden box-border"
+      className="rounded-[16px] w-full min-h-[88px] px-[18px] py-[16px] grid grid-rows-[auto_auto] grid-cols-[1fr_auto] gap-y-[10px] cursor-pointer transition-all duration-200 overflow-hidden box-border"
     >
       {/* Title — row-start: 1, col-start: 1, col-span: 1, min-h: 16px */}
       <p
         style={{
           color: theme.colors.text.primary,
-          fontFamily: theme.fonts.heading,
+          fontFamily: theme.fonts.nunito,
         }}
         className="col-start-1 col-span-1 row-start-1 row-span-1 min-h-[20px] leading-snug font-bold text-[16.5px] tracking-[-0.2px] truncate m-0 self-center"
       >

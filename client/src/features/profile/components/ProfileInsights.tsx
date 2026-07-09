@@ -1,4 +1,5 @@
 import React from "react";
+import { Card } from "@/components/ui";
 import { theme } from "@/theme/theme";
 import type { IProfileInsights } from "../types/profile.types";
 
@@ -11,32 +12,56 @@ export const ProfileInsights: React.FC<ProfileInsightsProps> = ({
   insights,
   isLoading = false,
 }) => {
-  const cardStyle = {
-    background: "linear-gradient(135deg, #FFFFF9 0%, rgba(205, 229, 241, 0.55) 50%, rgba(241, 230, 217, 0.55) 100%)",
-    border: "0.8px solid #AAC8DB",
+  const gridStyle: React.CSSProperties = {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gridAutoRows: "1fr",
+    gap: "12px",
+    width: "100%",
+  };
+
+  const cardStyle: React.CSSProperties = {
+    background: theme.colors.surface.insightsCard,
+    border: `0.8px solid ${theme.colors.stroke.insightsBorder}`,
     borderRadius: "10px",
-    boxShadow: "1px 1px 3px rgba(0,0,0,0.08)",
+    boxShadow: theme.shadows.insightsCard,
+    padding: "16px 20px",
+    minHeight: "clamp(80px, 22vw, 90px)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    gap: "4px",
+    width: "100%",
+    boxSizing: "border-box",
+  };
+
+  const sectionTitleStyle: React.CSSProperties = {
+    fontFamily: theme.fonts.sans,
+    fontWeight: 500,
+    fontSize: "11px",
+    lineHeight: "16.5px",
+    letterSpacing: "0.7px",
+    color: theme.colors.text.sectionTitle || "#928C88",
   };
 
   if (isLoading) {
     return (
-      <div className="w-full space-y-2 sm:space-y-2.5">
-        <h3
-          style={{ color: "#8E8E93", fontFamily: theme.fonts.sans }}
-          className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider pl-1"
-        >
+      <div className="w-full max-w-[480px] mx-auto flex flex-col gap-2 box-border">
+        <h3 style={sectionTitleStyle} className="uppercase pl-1 m-0">
           INSIGHTS
         </h3>
-        <div className="w-full grid grid-cols-2 gap-3 sm:gap-3.5 animate-pulse">
+        <div style={gridStyle} className="animate-pulse">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
               style={{
-                border: "0.8px solid #AAC8DB",
+                border: `0.8px solid ${theme.colors.stroke.insightsBorder}`,
                 borderRadius: "10px",
-                backgroundColor: "#FFFFF9",
+                backgroundColor: theme.colors.surface.elevated,
+                minHeight: "clamp(80px, 22vw, 90px)",
+                width: "100%",
               }}
-              className="p-3.5 sm:p-4 md:p-5 min-h-[5.5rem] w-full"
             />
           ))}
         </div>
@@ -57,35 +82,49 @@ export const ProfileInsights: React.FC<ProfileInsightsProps> = ({
   ];
 
   return (
-    <div className="w-full space-y-2 sm:space-y-2.5">
-      <h3
-        style={{ color: "#8E8E93", fontFamily: theme.fonts.sans }}
-        className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider pl-1"
-      >
+    <div className="w-full max-w-[480px] mx-auto flex flex-col gap-2 box-border">
+      <h3 style={sectionTitleStyle} className="uppercase pl-1 m-0">
         INSIGHTS
       </h3>
-      <div className="w-full grid grid-cols-2 gap-3 sm:gap-3.5 items-stretch">
+      <div style={gridStyle}>
         {items.map((item, idx) => (
-          <div
+          <Card
             key={idx}
+            variant="default"
             style={cardStyle}
-            className="p-3.5 sm:p-4 md:p-5 flex flex-col justify-center min-h-[5.5rem] w-full transition-transform hover:scale-[1.01]"
+            className="!rounded-[10px] !p-[16px_20px] transition-transform hover:scale-[1.01] cursor-default h-full"
           >
             <span
-              style={{ color: "#1C1C1E", fontFamily: theme.fonts.heading }}
-              className="text-2xl sm:text-3xl md:text-[32px] font-bold leading-tight tracking-tight truncate"
+              style={{
+                fontFamily: theme.fonts.sans,
+                fontWeight: 500,
+                fontSize: "clamp(28px, 7vw, 34px)",
+                lineHeight: "clamp(28px, 7vw, 34px)",
+                letterSpacing: "-0.5px",
+                color: theme.colors.text.primary || "#010102",
+              }}
+              className="truncate w-full text-left"
             >
               {item.value}
             </span>
             <span
-              style={{ color: "#8E8E93", fontFamily: theme.fonts.sans }}
-              className="text-[11px] sm:text-xs font-normal mt-0.5 truncate"
+              style={{
+                fontFamily: theme.fonts.sans,
+                fontWeight: 400,
+                fontSize: "clamp(11px, 2.8vw, 12px)",
+                lineHeight: "12px",
+                letterSpacing: "-0.12px",
+                color: theme.colors.text.secondary || "#6B6B6F",
+              }}
+              className="w-full text-left"
             >
               {item.label}
             </span>
-          </div>
+          </Card>
         ))}
       </div>
     </div>
   );
 };
+
+export default ProfileInsights;

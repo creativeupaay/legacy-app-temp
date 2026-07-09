@@ -23,7 +23,7 @@ export const QuickViewCalendarDate: React.FC<QuickViewCalendarDateProps> = ({
     backgroundColor:
       variant === "completed" || variant === "streak"
         ? theme.colors.primary.motivation
-        : "transparent",
+        : theme.colors.surface.default,
   };
 
   const dayStyle: React.CSSProperties = {
@@ -37,7 +37,7 @@ export const QuickViewCalendarDate: React.FC<QuickViewCalendarDateProps> = ({
   };
 
   const dateStyle: React.CSSProperties = {
-    fontFamily: theme.fonts.heading,
+    fontFamily: theme.fonts.nunito || "Nunito, sans-serif",
     color: theme.colors.text.primary,
   };
 

@@ -8,6 +8,7 @@ export const createEntrySchema = z
     privacy: z.nativeEnum(EntryPrivacy),
     sharedWith: z.array(z.string()).optional().default([]),
     entryDate: z.string().datetime().optional(),
+    folderId: z.string().nullable().optional().default(null),
   })
   .refine(
     (data) =>
@@ -27,6 +28,7 @@ export const updateEntrySchema = z
     privacy: z.nativeEnum(EntryPrivacy).optional(),
     sharedWith: z.array(z.string()).optional(),
     entryDate: z.string().datetime().optional(),
+    folderId: z.string().nullable().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided to update",
@@ -35,7 +37,8 @@ export const updateEntrySchema = z
 export const listEntriesQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
-  privacy: z.nativeEnum(EntryPrivacy).optional(), // optional filter
+  privacy: z.nativeEnum(EntryPrivacy).optional(),
+  folderId: z.string().nullable().optional(),
 });
 
 export type CreateEntryInput = z.infer<typeof createEntrySchema>;

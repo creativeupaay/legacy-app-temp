@@ -6,6 +6,7 @@ export interface JournalState {
   draftTitle: string;
   draftBody: string;
   draftPrivacy: EntryPrivacy;
+  draftFolderId: string | null;
   shareSubOption: "everyone" | "selected" | null;
   selectedContactIds: string[];
   activeFilter: "all" | "memories";
@@ -17,6 +18,7 @@ const initialState: JournalState = {
   draftTitle: "",
   draftBody: "",
   draftPrivacy: EntryPrivacy.PRIVATE,
+  draftFolderId: null,
   shareSubOption: null,
   selectedContactIds: [],
   activeFilter: "all",
@@ -38,6 +40,9 @@ export const journalSlice = createSlice({
     },
     setDraftPrivacy: (state, action: PayloadAction<EntryPrivacy>) => {
       state.draftPrivacy = action.payload;
+    },
+    setDraftFolderId: (state, action: PayloadAction<string | null>) => {
+      state.draftFolderId = action.payload;
     },
     setShareSubOption: (
       state,
@@ -74,6 +79,7 @@ export const journalSlice = createSlice({
       state.draftTitle = "";
       state.draftBody = "";
       state.draftPrivacy = EntryPrivacy.PRIVATE;
+      state.draftFolderId = null;
       state.shareSubOption = null;
       state.selectedContactIds = [];
     },
@@ -85,6 +91,7 @@ export const {
   setDraftTitle,
   setDraftBody,
   setDraftPrivacy,
+  setDraftFolderId,
   setShareSubOption,
   toggleContactSelection,
   setSelectedContactIds,

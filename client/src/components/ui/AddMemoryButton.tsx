@@ -50,21 +50,13 @@ export const AddMemoryButton: React.FC<AddMemoryButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       style={buttonStyle}
-      className={`w-[clamp(120px,39.18vw,188px)] h-[clamp(38px,12.21vw,58px)] rounded-full flex items-center justify-center gap-[clamp(6px,2.54vw,12px)] px-[clamp(12px,4.07vw,20px)] py-[clamp(10px,3.81vw,18px)] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity shrink-0 ${className}`.trim()}
+      className={`w-[clamp(136px,39.18vw,154px)] h-[clamp(42px,12.21vw,48px)] rounded-[999px] flex items-center justify-center gap-[clamp(8px,2.54vw,10px)] px-[clamp(14px,4.07vw,16px)] py-[clamp(12px,3.81vw,15px)] hover:opacity-95 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 ease-out shrink-0 ${className}`.trim()}
     >
       <Plus
-        style={iconStyle}
-        className="w-[clamp(14px,4.58vw,22px)] h-[clamp(14px,4.58vw,22px)] shrink-0"
-        strokeWidth={2}
+        className="w-[clamp(15px,4.58vw,18px)] h-[clamp(15px,4.58vw,18px)] text-[#000000] shrink-0"
+        strokeWidth={2.3}
       />
-      {/* UNCONFIRMED: letter-spacing was captured as "50%" in Figma. Using tracking-wide (~0.1em) as a clean visual approximation until verified against Figma Typography panel. */}
-      <span
-        style={{
-          fontFamily: theme.fonts.sans,
-          color: theme.colors.text.primary,
-        }}
-        className="w-[clamp(76px,24.68vw,118px)] h-[clamp(13px,4.32vw,21px)] font-medium text-[clamp(11px,3.56vw,16px)] uppercase tracking-wide leading-[100%] whitespace-nowrap flex items-center justify-center"
-      >
+      <span className="font-['Inter'] font-medium text-[clamp(12px,3.56vw,14px)] leading-none uppercase tracking-[0.05em] text-[#000000] whitespace-nowrap flex items-center justify-center">
         ADD MEMORY
       </span>
     </button>

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { protect } from "../middlewares/auth.middleware";
+import { protect } from "../../auth/middlewares/auth.middleware";
 import { validate } from "../../../middlewares/validate.middleware";
 import { updateProfileSchema } from "../validators/profile.validator";
 import { uploadImage } from "../../../middlewares/upload.middleware";

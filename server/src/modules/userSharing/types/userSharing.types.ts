@@ -26,8 +26,10 @@ export interface IUpdateContactRequest {
 
 export interface IContactResponse {
   id: string;
+  recipientUserId?: string;
   name: string;
   email: string;
+  avatar?: string | null;
   relationship?: string;
   createdAt: Date;
   updatedAt: Date;

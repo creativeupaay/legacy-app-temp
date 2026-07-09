@@ -25,6 +25,7 @@ export const JournalEditorToolbar: React.FC<JournalEditorToolbarProps> = ({
   return (
     <div className="sticky bottom-4 left-0 right-0 w-full z-30 pt-2 pb-[max(env(safe-area-inset-bottom),12px)] pointer-events-none flex justify-center mt-auto">
       <div
+        onMouseDown={(e) => e.preventDefault()}
         style={{
           backgroundColor: "#F8F8FA",
           borderColor: "rgba(225, 225, 223, 0.8)",
@@ -46,8 +47,8 @@ export const JournalEditorToolbar: React.FC<JournalEditorToolbarProps> = ({
           type="button"
           onClick={onToggleHeading}
           style={{
-            backgroundColor: activeFormats.header ? "#1C274C" : "#F2F2F7",
-            color: activeFormats.header ? "#FFFFFF" : "#1C274C",
+            backgroundColor: activeFormats.size ? "#1C274C" : "#F2F2F7",
+            color: activeFormats.size ? "#FFFFFF" : "#1C274C",
             fontFamily: theme.fonts.heading,
           }}
           className="w-9 h-9 min-w-[36px] rounded-[12px] flex items-center justify-center font-semibold text-[14px] hover:bg-[#E5E5EA] active:scale-95 transition-all shrink-0 cursor-pointer"

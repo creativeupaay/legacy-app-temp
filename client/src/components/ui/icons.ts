@@ -16,6 +16,9 @@ import {
   X,
   SquarePen,
   Mic,
+  Bell,
+  Star,
+  Sun,
   type LucideIcon,
   type LucideProps,
 } from "lucide-react";
@@ -42,6 +45,17 @@ export const PlayIcon: React.FC<LucideProps> = ({
     ...props,
   });
 
+export const PlusIcon: React.FC<LucideProps> = ({
+  size = 24,
+  className = "",
+  ...props
+}) =>
+  React.createElement(Plus, {
+    size,
+    className: `shrink-0 aspect-square ${className}`.trim(),
+    ...props,
+  });
+
 export {
   ArrowRight,
   Play,
@@ -59,6 +73,9 @@ export {
   X,
   SquarePen,
   Mic,
+  Bell,
+  Star,
+  Sun,
 };
 export type { LucideIcon, LucideProps };
 

@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
-import { MoreHorizontal, Lock, Globe, Users } from "lucide-react";
+import { MoreHorizontal, Lock, Globe, Users, Folder, ChevronDown } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { setDraftTitle, setDraftBody } from "@/features/journal/slice/journalSlice";
+import { setDraftTitle, setDraftBody, setDraftFolderId } from "@/features/journal/slice/journalSlice";
 import { IconButton } from "@/components/ui";
 import { theme } from "@/theme/theme";
 import { useGetJournalByIdQuery } from "@/features/journal/api/journalApi";
+import { useGetJournalFoldersQuery } from "@/features/journal/api/journalFolderApi";
 import { EntryPrivacy } from "@/features/journal/types/journal.types";
 import { UpdateDialog, DeleteDialog, JournalEditorToolbar } from "@/features/journal/components";
 import { useJournalEditor, useJournalDialogs } from "@/features/journal/hooks";
@@ -42,16 +43,33 @@ const JournalWritePage: React.FC = () => {
     handleMicrophoneClick,
   } = useJournalEditor(mode);
 
+  /* ── URL search params for folderId ── */
+  const [searchParams] = useSearchParams();
+  const queryFolderId = searchParams.get("folderId");
+
   /* ── Local state (View / Edit mode only) ── */
   const [localTitle, setLocalTitle] = useState("");
   const [localBody, setLocalBody] = useState("");
   const [localPrivacy, setLocalPrivacy] = useState<EntryPrivacy>(EntryPrivacy.PRIVATE);
   const [localSharedWith, setLocalSharedWith] = useState<string[]>([]);
   const [localEntryDate, setLocalEntryDate] = useState<string>("");
+  const [localFolderId, setLocalFolderId] = useState<string | null>(null);
+
+  /* ── Folder query ── */
+  const { data: folders = [] } = useGetJournalFoldersQuery();
+  const { draftFolderId } = useAppSelector((state) => state.journal);
+
+  useEffect(() => {
+    if (!isExistingEntry && queryFolderId !== null) {
+      dispatch(setDraftFolderId(queryFolderId));
+    }
+  }, [isExistingEntry, queryFolderId, dispatch]);
 
   /* ── UI state ── */
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isFolderDropdownOpen, setIsFolderDropdownOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const folderDropdownRef = useRef<HTMLDivElement>(null);
 
   /* ── Dialogs & Mutations Hook ── */
   const {
@@ -69,6 +87,7 @@ const JournalWritePage: React.FC = () => {
     localBody,
     localPrivacy,
     localSharedWith,
+    localFolderId,
     navigate,
   });
 
@@ -83,6 +102,7 @@ const JournalWritePage: React.FC = () => {
     setLocalBody(entry.textBody ?? "");
     setLocalPrivacy(entry.privacy ?? EntryPrivacy.PRIVATE);
     setLocalSharedWith(entry.sharedWith ?? []);
+    setLocalFolderId(entry.folderId || null);
     const date = entry.entryDate ?? entry.createdAt;
     setLocalEntryDate(
       date instanceof Date ? date.toISOString() : (date as string) || new Date().toISOString()
@@ -168,7 +188,7 @@ const JournalWritePage: React.FC = () => {
           color,
           fontFamily: theme.fonts.sans,
         }}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium mb-5 self-start"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium"
       >
         {icon}
         <span>{label}</span>
@@ -191,31 +211,93 @@ const JournalWritePage: React.FC = () => {
   const saveDisabled = isCreateMode ? !createCanSave : !editCanSave;
   const onSaveClick = isCreateMode ? handleCreateSave : handleEditSaveClick;
 
+  /* ── Folder selector helper ── */
+  const currentFolderId = isCreateMode ? draftFolderId : localFolderId;
+  const currentFolder =
+    folders.find((f) => f.id === currentFolderId) || {
+      id: null,
+      name: "All entries",
+      color: "#C15700",
+    };
+
+  const handleSelectFolder = (id: string | null) => {
+    if (isCreateMode) {
+      dispatch(setDraftFolderId(id));
+    } else {
+      setLocalFolderId(id);
+    }
+    setIsFolderDropdownOpen(false);
+  };
+
+  const renderFolderSelector = () => {
+    return (
+      <div className="relative inline-block" ref={folderDropdownRef}>
+        <button
+          type="button"
+          disabled={isViewMode}
+          onClick={() => setIsFolderDropdownOpen((prev) => !prev)}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors ${
+            !isViewMode ? "hover:bg-black/10 cursor-pointer" : "cursor-default"
+          }`}
+          style={{
+            backgroundColor: "rgba(0,0,0,0.05)",
+            color: "#182232",
+            fontFamily: theme.fonts.sans,
+          }}
+        >
+          <Folder className="w-3.5 h-3.5 shrink-0" style={{ color: currentFolder.color }} />
+          <span>{currentFolder.name}</span>
+          {!isViewMode && <ChevronDown className="w-3 h-3 text-[#6B6B6F]" />}
+        </button>
+
+        {isFolderDropdownOpen && !isViewMode && (
+          <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 z-50 min-w-[180px] rounded-[14px] bg-[#FDFDF8] shadow-lg border border-[#EAEAE5] py-1.5 flex flex-col">
+            <button
+              type="button"
+              onClick={() => handleSelectFolder(null)}
+              className="w-full px-3 py-2 text-left text-[13px] font-['Inter'] text-[#182232] hover:bg-black/5 flex items-center gap-2"
+            >
+              <Folder className="w-4 h-4 text-[#C15700]" />
+              <span>All entries</span>
+            </button>
+            {folders
+              .filter((f) => f.id !== null)
+              .map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => handleSelectFolder(f.id)}
+                  className="w-full px-3 py-2 text-left text-[13px] font-['Inter'] text-[#182232] hover:bg-black/5 flex items-center gap-2"
+                >
+                  <Folder className="w-4 h-4" style={{ color: f.color }} />
+                  <span>{f.name}</span>
+                </button>
+              ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   /* ========================================================================
    * Render
    * ======================================================================== */
   return (
     <div
-      style={{ backgroundColor: theme.colors.surface.bg || "#F2F3EE" }}
+      style={{ backgroundColor: theme.colors.surface.otherBg }}
       className="w-full max-w-[480px] min-h-screen mx-auto flex flex-col p-[5%] pb-4 relative"
     >
-      {/* ── Header ── */}
-      <div className="relative flex items-center justify-between w-full pt-1 mb-6">
-        <div className="z-10">
+      {/* ── Header: Back | Folder Selector | Actions ── */}
+      <div className="relative flex items-center justify-between w-full pt-1 mb-4 gap-2">
+        <div className="z-10 flex items-center shrink-0">
           <IconButton variant="back" onClick={() => navigate(-1)} aria-label="Go back" />
         </div>
 
-        <span
-          style={{
-            fontFamily: theme.fonts.sans,
-            color: theme.colors.text.secondary || "#71717A",
-          }}
-          className="absolute left-1/2 -translate-x-1/2 text-[13.5px] font-medium tracking-[0.1px] select-none pointer-events-none text-center"
-        >
-          {formattedDate}
-        </span>
+        <div className="z-10 flex items-center justify-center min-w-0">
+          {renderFolderSelector()}
+        </div>
 
-        <div className="z-10 relative" ref={menuRef}>
+        <div className="z-10 relative flex items-center justify-end shrink-0" ref={menuRef}>
           {isViewMode ? (
             <>
               <button
@@ -287,8 +369,23 @@ const JournalWritePage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Privacy Badge ── */}
-      {renderPrivacyBadge()}
+      {/* ── Second Row: Privacy Badge (Left) | Date (Center) ── */}
+      <div className="relative flex items-center justify-between w-full mb-3 min-h-[26px]">
+        <div className="z-10 flex items-center">
+          {renderPrivacyBadge()}
+        </div>
+        <div className="absolute inset-x-0 flex items-center justify-center pointer-events-none">
+          <span
+            style={{
+              fontFamily: theme.fonts.sans,
+              color: theme.colors.text.secondary || "#71717A",
+            }}
+            className="text-[13.5px] font-medium tracking-[0.1px] select-none"
+          >
+            {formattedDate}
+          </span>
+        </div>
+      </div>
 
       {/* ── Title Input ── */}
       <div className="w-full mb-1">

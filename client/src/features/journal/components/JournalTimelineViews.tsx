@@ -47,7 +47,6 @@ export const JournalTimeline: React.FC<JournalTimelineProps> = ({
                   fontFamily: theme.fonts.heading,
                   backgroundColor: "#FFFFFF",
                   border: "1px solid rgba(0,0,0,0.07)",
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
                 }}
                 className="flex flex-col items-center justify-center z-10 py-1.5 px-1 rounded-[8px] min-w-[38px]"
               >

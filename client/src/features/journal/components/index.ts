@@ -48,11 +48,9 @@ export {
   ShareOptionCard,
   ContactItem,
   ContactSelectionList,
-  AddContactModal,
 } from "./PrivacySelectionComponents";
 export type {
   ShareOptionCardProps,
   ContactItemProps,
   ContactSelectionListProps,
-  AddContactModalProps,
 } from "./PrivacySelectionComponents";

@@ -13,6 +13,7 @@ export interface UseJournalDialogsParams {
   localBody: string;
   localPrivacy: EntryPrivacy;
   localSharedWith: string[];
+  localFolderId?: string | null;
   navigate: NavigateFunction;
 }
 
@@ -22,6 +23,7 @@ export function useJournalDialogs({
   localBody,
   localPrivacy,
   localSharedWith,
+  localFolderId = null,
   navigate,
 }: UseJournalDialogsParams) {
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
@@ -44,6 +46,7 @@ export function useJournalDialogs({
             textBody: localBody,
             privacy: localPrivacy,
             sharedWith: localSharedWith,
+            folderId: localFolderId,
             ...(updateDateToToday ? { entryDate: new Date().toISOString() } : {}),
           },
         }).unwrap();
@@ -54,7 +57,16 @@ export function useJournalDialogs({
         setIsSaving(false);
       }
     },
-    [entryId, localTitle, localBody, localPrivacy, localSharedWith, updateEntry, navigate]
+    [
+      entryId,
+      localTitle,
+      localBody,
+      localPrivacy,
+      localSharedWith,
+      localFolderId,
+      updateEntry,
+      navigate,
+    ]
   );
 
   const handleDelete = useCallback(async () => {

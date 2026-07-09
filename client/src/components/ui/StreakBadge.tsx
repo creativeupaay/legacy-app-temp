@@ -5,12 +5,14 @@ import { theme } from "@/theme/theme";
 export interface StreakBadgeProps {
   count: number;
   active?: boolean; // false = Default (inactive/gray), true = Variant2 (active/navy)
+  onClick?: () => void;
   className?: string;
 }
 
 export const StreakBadge: React.FC<StreakBadgeProps> = ({
   count,
   active = false,
+  onClick,
   className = "",
 }) => {
   const badgeStyle: React.CSSProperties = {
@@ -32,11 +34,12 @@ export const StreakBadge: React.FC<StreakBadgeProps> = ({
   };
 
   return (
-    <div
+    <button
+      onClick={onClick}
       data-component="Streak"
       data-variant={active ? "Variant2" : "Default"}
       style={badgeStyle}
-      className={`inline-flex items-center justify-center gap-[clamp(4px,2vw,8px)] h-[clamp(1.75rem,8.14vw,2rem)] min-w-[clamp(3rem,15vw,3.75rem)] rounded-full px-[clamp(0.5rem,3vw,0.75rem)] border-[0.5px] shadow-[0px_3px_1px_0px_rgba(0,0,0,0.04),0px_3px_8px_0px_rgba(0,0,0,0.12)] transition-colors shrink-0 ${className}`.trim()}
+      className={`inline-flex items-center justify-center gap-[clamp(4px,2vw,8px)] h-[clamp(1.75rem,8.14vw,2rem)] min-w-[clamp(3rem,15vw,3.75rem)] rounded-full px-[clamp(0.5rem,3vw,0.75rem)] border-[0.5px] shadow-[0px_3px_1px_0px_rgba(0,0,0,0.04),0px_3px_8px_0px_rgba(0,0,0,0.12)] transition-colors shrink-0 ${onClick ? "cursor-pointer hover:opacity-90 active:scale-95" : ""} ${className}`.trim()}
     >
       <Zap
         style={iconStyle}
@@ -50,7 +53,7 @@ export const StreakBadge: React.FC<StreakBadgeProps> = ({
       >
         {count}
       </span>
-    </div>
+    </button>
   );
 };
 

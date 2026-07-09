@@ -12,7 +12,8 @@ export interface IJournalEntry {
   textBody: string;
   privacy: EntryPrivacy;
   sharedWith: Types.ObjectId[];
-  entryDate: Date; 
+  entryDate: Date;
+  folderId?: Types.ObjectId | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,8 +24,10 @@ export interface ICreateEntryRequest {
   title: string;
   textBody: string;
   privacy: EntryPrivacy;
-  sharedWith?: string[]; 
-  entryDate?: string;    }
+  sharedWith?: string[];
+  entryDate?: string;
+  folderId?: string | null;
+}
 
 export interface IUpdateEntryRequest {
   title?: string;
@@ -32,6 +35,7 @@ export interface IUpdateEntryRequest {
   privacy?: EntryPrivacy;
   sharedWith?: string[];
   entryDate?: string;
+  folderId?: string | null;
 }
 
 export interface IEntryResponse {
@@ -41,6 +45,7 @@ export interface IEntryResponse {
   privacy: EntryPrivacy;
   sharedWith: string[];
   entryDate: Date;
+  folderId: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

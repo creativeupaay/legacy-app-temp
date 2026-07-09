@@ -8,8 +8,12 @@ export const theme = {
       elevated: "#FFFFF9",
       primary: "#E3F1F7",
       nav: "#F8F8F8",
-      bg: "#F2F3EE", // NEW — app background shade from placeholder tokens
+      bg: "#F8F8F3", // Default app background for other pages (#F8F8F3)
+      mainBg: "#F2F3EE", // App background specifically for the four main pages (#F2F3EE)
+      otherBg: "#F8F8F3", // App background for other pages (#F8F8F3)
       disabled: "#D7D7D7", // NEW — Button disabled background
+      editButton: "#D1D1D6", // Profile card edit button background
+      insightsCard: "linear-gradient(135deg, rgba(205, 229, 241, 0.3) 0%, rgba(241, 230, 217, 0.3) 100%), #FFFFF9", // Profile Insights card gradient
     },
 
     text: {
@@ -20,6 +24,7 @@ export const theme = {
       dateYear: "#676767", // NEW — added, distinct from tertiary (#8d8d91); confirm with senior whether this should actually just BE tertiary
       muted: "#6B6B6B", // NEW — placeholder secondary text color from index.css
       disabled: "#7F7F7F", // NEW — Button disabled text color
+      sectionTitle: "#928C88", // Profile section title uppercase text color
     },
 
     primary: {
@@ -38,9 +43,11 @@ export const theme = {
       nav: "#F0F0F0", // NEW — NavigationBar's border; distinct from stroke.dark (#F8F8FD)
       border: "#E5E5E5", // NEW — general border/divider color from placeholder tokens
       subtle: "rgba(0,0,0,0.04)", // NEW — shared with IconButton Close & Secondary Button border
+      insightsBorder: "#AAC8DB", // Profile Insights card top border color
     },
 
     icon: {               // NEW top-level group — theme.ts had no icon group at all
+      primary: "#010102", // Primary icon color matching text.primary
       muted: "#928C88",   // (chevrons, lock icon)
     },
 
@@ -64,11 +71,18 @@ export const theme = {
     sans: "Inter, ui-sans-serif, system-ui",
     heading: "Inter, ui-sans-serif, system-ui",
     serif: "Georgia, ui-serif, system-ui",
+    nunito: "Nunito, ui-sans-serif, system-ui",
   },
 
   hover: {          // NEW — top-level group for JS mouseenter/mouseleave hover states
     buttonAction: "#0a2036",  // darkened buttonAction — update if buttonAction is unified with primary.action
     outline: "rgba(0,0,0,0.02)", // Secondary variant hover
+    editButton: "#C5C5CA", // Profile card edit button hover
+  },
+
+  shadows: {
+    profileCard: "1px 1px 3px rgba(0,0,0,0.06)",
+    insightsCard: "1px 1px 3px rgba(0,0,0,0.08)",
   },
 } as const;
 

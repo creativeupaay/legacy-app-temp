@@ -1,7 +1,8 @@
 import React from "react";
 import { IconButton, AddMemoryButton, BottomSheet } from "@/components/ui";
-import { Plus, ChevronRight, Search, X } from "lucide-react";
+import { Plus, ChevronRight, Search, X, MoreHorizontal } from "lucide-react";
 import { theme } from "@/theme/theme";
+import type { IJournalFolder } from "@/features/journal/types/journalFolder.types";
 
 
 export interface JournalHeaderProps {
@@ -11,6 +12,9 @@ export interface JournalHeaderProps {
   onSearchChange?: (query: string) => void;
   isSearchOpen?: boolean;
   onSearchToggle?: (isOpen: boolean) => void;
+  showFolderActions?: boolean;
+  onEditFolder?: () => void;
+  onDeleteFolder?: () => void;
 }
 
 export const JournalHeader: React.FC<JournalHeaderProps> = ({
@@ -20,7 +24,23 @@ export const JournalHeader: React.FC<JournalHeaderProps> = ({
   onSearchChange,
   isSearchOpen = false,
   onSearchToggle,
+  showFolderActions = false,
+  onEditFolder,
+  onDeleteFolder,
 }) => {
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const menuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleOpenSearch = () => {
     onSearchToggle?.(true);
     onSearchClick?.();
@@ -31,10 +51,71 @@ export const JournalHeader: React.FC<JournalHeaderProps> = ({
     onSearchChange?.("");
   };
 
+  const renderRightActions = () => (
+    <div className="flex items-center gap-2">
+      <IconButton variant="calendar" onClick={onCalendarClick} aria-label="Calendar view" />
+
+      {showFolderActions && (
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            aria-label="More options"
+            style={{
+              backgroundColor: theme.colors.surface.default,
+              borderColor: "rgba(0,0,0,0.04)",
+            }}
+            className="w-10 h-10 rounded-full border-[0.5px] shadow-[0px_2px_0.75px_rgba(0,0,0,0.12),0px_1px_0.4px_rgba(0,0,0,0.04)] flex items-center justify-center hover:bg-black/5 active:scale-95 transition-all cursor-pointer"
+          >
+            <MoreHorizontal
+              className="w-5 h-5"
+              style={{ color: theme.colors.text.primary }}
+            />
+          </button>
+
+          {isMenuOpen && (
+            <div
+              style={{
+                backgroundColor: theme.colors.surface.default,
+                boxShadow:
+                  "0px 8px 32px rgba(0,0,0,0.12), 0px 2px 8px rgba(0,0,0,0.06)",
+                fontFamily: theme.fonts.sans,
+              }}
+              className="absolute right-0 top-[calc(100%+8px)] w-[160px] rounded-[16px] overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150 border border-black/[0.06]"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  onEditFolder?.();
+                }}
+                style={{ color: theme.colors.text.primary }}
+                className="w-full text-left px-4 py-3 text-[14px] font-medium hover:bg-black/[0.04] transition-colors cursor-pointer border-b border-black/[0.05]"
+              >
+                Edit
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  onDeleteFolder?.();
+                }}
+                className="w-full text-left px-4 py-3 text-[14px] font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
   if (isSearchOpen) {
     return (
-      <div className="flex items-center justify-between w-full mb-5 pt-1 animate-in fade-in duration-200">
-        <div className="flex items-center w-[65%] bg-white border border-black/10 rounded-full px-3 h-10 shadow-sm gap-1.5">
+      <div className="flex items-center justify-between w-full mb-5 pt-1 px-[4.35%] animate-in fade-in duration-200">
+        <div className="flex items-center flex-1 mr-2 bg-white border border-black/10 rounded-full px-3 h-10 shadow-sm gap-1.5">
           <Search className="w-4 h-4 text-gray-500 shrink-0" />
           <input
             type="text"
@@ -64,40 +145,55 @@ export const JournalHeader: React.FC<JournalHeaderProps> = ({
             Cancel
           </button>
         </div>
-        <IconButton variant="calendar" onClick={onCalendarClick} aria-label="Calendar view" />
+        {renderRightActions()}
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-between w-full mb-5 pt-1">
+    <div className="flex items-center justify-between w-full mb-5 pt-1 px-[4.35%]">
       <IconButton variant="search" onClick={handleOpenSearch} aria-label="Search journals" />
-      <IconButton variant="calendar" onClick={onCalendarClick} aria-label="Calendar view" />
+      {renderRightActions()}
     </div>
   );
 };
 
 export interface JournalFilterBarProps {
   allCount: number;
-  memoriesCount: number;
-  dailyNotesCount?: number;
-  travelCount?: number;
-  activeFilter?: "all" | "memories";
-  onFilterChange?: (filter: "all" | "memories") => void;
+  folders?: IJournalFolder[];
+  activeFilter?: string | null;
+  onFilterChange?: (filterId: string | null) => void;
   onAddNewClick: () => void;
 }
 
 export const JournalFilterBar: React.FC<JournalFilterBarProps> = ({
   allCount,
-  memoriesCount = 1,
-  dailyNotesCount = 2,
-  travelCount = 2,
+  folders = [],
+  activeFilter = null,
+  onFilterChange,
   onAddNewClick,
 }) => {
+  const customFolders = folders.filter((f) => f.id !== null);
+
+  const getChipStyle = (isActive: boolean) => ({
+    height: "32px",
+    padding: "0 14px",
+    gap: "6px",
+    borderRadius: "999px",
+    borderWidth: isActive ? "1.5px" : "0.8px",
+    borderStyle: "solid" as const,
+    borderColor: isActive ? "#B3CCD7" : "#E1E1DF",
+    backgroundColor: isActive ? "#E3F1F7" : "#FFFFFF",
+    boxShadow: isActive ? "none" : "0px 1px 3px 0px rgba(0, 0, 0, 0.05)",
+    fontFamily: theme.fonts.sans,
+  });
+
+  const isAllActive = activeFilter === null || activeFilter === "all";
+
   return (
     <div
       style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      className="flex items-center gap-[10px] overflow-x-auto no-scrollbar py-1 mb-2 w-full"
+      className="flex items-center gap-[10px] overflow-x-auto no-scrollbar py-1 mb-2 w-full px-[4.35%]"
     >
       <button
         type="button"
@@ -122,100 +218,69 @@ export const JournalFilterBar: React.FC<JournalFilterBarProps> = ({
         <span>Add new journal</span>
       </button>
 
-      <div
-        style={{
-          height: "32px",
-          minWidth: "103.6px",
-          padding: "0 14px",
-          gap: "4px",
-          borderRadius: "999px",
-          borderWidth: "1.5px",
-          borderStyle: "solid",
-          borderColor: "#B3CCD7",
-          backgroundColor: "#E3F1F7",
-          fontFamily: theme.fonts.sans,
-        }}
-        className="flex items-center justify-center text-[13px] shrink-0 select-none cursor-default"
+      {/* All Entries Chip */}
+      <button
+        type="button"
+        onClick={() => onFilterChange?.(null)}
+        style={getChipStyle(isAllActive)}
+        className="flex items-center justify-center text-[13px] shrink-0 select-none cursor-pointer hover:opacity-90 transition-all"
       >
-        <span style={{ color: theme.colors.primary.action || "#1C274C" }} className="font-semibold">
+        <span
+          style={{
+            color: isAllActive
+              ? theme.colors.primary.action || "#1C274C"
+              : theme.colors.text.secondary || "#71717A",
+          }}
+          className={isAllActive ? "font-semibold" : "font-medium"}
+        >
           All Entries
         </span>
-        <span style={{ color: theme.colors.primary.action || "#1C274C" }} className="font-bold text-[12px]">
+        <span
+          style={{
+            color: isAllActive
+              ? theme.colors.primary.action || "#1C274C"
+              : theme.colors.text.tertiary || "#A1A1AA",
+          }}
+          className="font-bold text-[12px]"
+        >
           {allCount}
         </span>
-      </div>
+      </button>
 
-      <div
-        style={{
-          height: "32px",
-          minWidth: "99.6px",
-          padding: "6px 12px",
-          gap: "6px",
-          borderRadius: "9999px",
-          borderWidth: "0.8px",
-          borderStyle: "solid",
-          borderColor: "#E1E1DF",
-          backgroundColor: "#FFFFFF",
-          boxShadow: "0px 1px 3px 0px rgba(0, 0, 0, 0.05)",
-          fontFamily: theme.fonts.sans,
-        }}
-        className="flex items-center justify-center text-[13px] shrink-0 select-none cursor-default"
-      >
-        <span style={{ color: theme.colors.text.secondary || "#71717A" }} className="font-medium">
-          Memories
-        </span>
-        <span style={{ color: theme.colors.text.tertiary || "#A1A1AA" }} className="font-bold text-[12px]">
-          {memoriesCount}
-        </span>
-      </div>
-
-      <div
-        style={{
-          height: "32px",
-          minWidth: "99.6px",
-          padding: "6px 12px",
-          gap: "6px",
-          borderRadius: "9999px",
-          borderWidth: "0.8px",
-          borderStyle: "solid",
-          borderColor: "#E1E1DF",
-          backgroundColor: "#FFFFFF",
-          boxShadow: "0px 1px 3px 0px rgba(0, 0, 0, 0.05)",
-          fontFamily: theme.fonts.sans,
-        }}
-        className="flex items-center justify-center text-[13px] shrink-0 select-none cursor-default"
-      >
-        <span style={{ color: theme.colors.text.secondary || "#71717A" }} className="font-medium">
-          Daily Notes
-        </span>
-        <span style={{ color: theme.colors.text.tertiary || "#A1A1AA" }} className="font-bold text-[12px]">
-          {dailyNotesCount}
-        </span>
-      </div>
-
-      <div
-        style={{
-          height: "32px",
-          minWidth: "99.6px",
-          padding: "6px 12px",
-          gap: "6px",
-          borderRadius: "9999px",
-          borderWidth: "0.8px",
-          borderStyle: "solid",
-          borderColor: "#E1E1DF",
-          backgroundColor: "#FFFFFF",
-          boxShadow: "0px 1px 3px 0px rgba(0, 0, 0, 0.05)",
-          fontFamily: theme.fonts.sans,
-        }}
-        className="flex items-center justify-center text-[13px] shrink-0 select-none cursor-default"
-      >
-        <span style={{ color: theme.colors.text.secondary || "#71717A" }} className="font-medium">
-          Travel
-        </span>
-        <span style={{ color: theme.colors.text.tertiary || "#A1A1AA" }} className="font-bold text-[12px]">
-          {travelCount}
-        </span>
-      </div>
+      {/* Custom Folder Chips */}
+      {customFolders.map((folder) => {
+        const isActive = activeFilter === folder.id;
+        return (
+          <button
+            key={folder.id}
+            type="button"
+            onClick={() => onFilterChange?.(folder.id)}
+            style={getChipStyle(isActive)}
+            className="flex items-center justify-center text-[13px] shrink-0 select-none cursor-pointer hover:opacity-90 transition-all"
+          >
+            <span
+              style={{
+                color: isActive
+                  ? theme.colors.primary.action || "#1C274C"
+                  : theme.colors.text.secondary || "#71717A",
+              }}
+              className={isActive ? "font-semibold" : "font-medium"}
+            >
+              {folder.name}
+            </span>
+            <span
+              style={{
+                color: isActive
+                  ? theme.colors.primary.action || "#1C274C"
+                  : theme.colors.text.tertiary || "#A1A1AA",
+              }}
+              className="font-bold text-[12px]"
+            >
+              {folder.journalCount}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 };
@@ -230,8 +295,8 @@ export const PrivacySegmentedFilter: React.FC<PrivacySegmentedFilterProps> = ({
   onChange,
 }) => {
   return (
-    <div className="fixed bottom-[108px] left-0 right-0 z-40 flex justify-center pointer-events-none">
-      <div className="pointer-events-auto bg-[#E6E7E1] p-[3px] rounded-full flex items-center gap-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] border border-black/[0.04]">
+    <div className="fixed bottom-[clamp(96px,12vh,110px)] left-0 right-0 z-40 flex justify-center pointer-events-none px-4">
+      <div className="pointer-events-auto bg-[#E6E7E1] p-[clamp(2px,0.6vw,3px)] rounded-full flex items-center gap-[clamp(2px,0.8vw,4px)] shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] border border-black/[0.04] max-w-full overflow-x-auto no-scrollbar">
         {(["all", "private", "shared"] as const).map((tab) => {
           const isActive = value === tab;
           const label = tab.charAt(0).toUpperCase() + tab.slice(1);
@@ -241,7 +306,7 @@ export const PrivacySegmentedFilter: React.FC<PrivacySegmentedFilterProps> = ({
               type="button"
               onClick={() => onChange(tab)}
               style={{ fontFamily: theme.fonts.sans }}
-              className={`py-[5px] px-[18px] rounded-full text-[13px] font-medium transition-all duration-200 cursor-pointer select-none ${
+              className={`py-[clamp(4px,1vw,5px)] px-[clamp(10px,3.5vw,18px)] rounded-full text-[clamp(11px,3vw,13px)] font-medium transition-all duration-200 cursor-pointer select-none whitespace-nowrap shrink-0 ${
                 isActive
                   ? "bg-white text-[#010102] font-semibold shadow-[0_2px_6px_rgba(0,0,0,0.08),0_1px_1px_rgba(0,0,0,0.04)]"
                   : "bg-transparent text-[#71717A] hover:text-[#010102]"
@@ -265,13 +330,13 @@ export const FloatingJournalButton: React.FC<FloatingJournalButtonProps> = ({
   onClick,
 }) => {
   return (
-    <div className="fixed bottom-[108px] left-0 right-0 z-30 flex justify-center pointer-events-none">
-      <div className="w-full max-w-[480px] flex justify-end px-[4%] pointer-events-none">
+    <div className="fixed bottom-[clamp(96px,12vh,110px)] left-0 right-0 z-[45] flex justify-center pointer-events-none">
+      <div className="w-full max-w-[480px] flex justify-end pr-[18px] pointer-events-none">
         <div className="pointer-events-auto">
           <AddMemoryButton
             compact={true}
             onClick={onClick}
-            className="!w-[42px] !h-[42px] !min-w-[42px] !min-h-[42px] !p-0 shadow-[0px_4px_16px_rgba(0,0,0,0.15)] hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+            className="!w-[clamp(38px,10vw,42px)] !h-[clamp(38px,10vw,42px)] !min-w-[clamp(38px,10vw,42px)] !min-h-[clamp(38px,10vw,42px)] !p-0 shadow-[0px_4px_16px_rgba(0,0,0,0.15)] hover:scale-105 active:scale-95 transition-transform cursor-pointer"
           />
         </div>
       </div>

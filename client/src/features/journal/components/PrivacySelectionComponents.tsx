@@ -54,18 +54,30 @@ export const ShareOptionCard: React.FC<ShareOptionCardProps> = ({
   );
 };
 
+const CONTACT_PASTELS = [
+  { bg: "#CDE5F1", text: "#1C274C" },
+  { bg: "#DCEFD8", text: "#1F3B1F" },
+  { bg: "#F2E4D8", text: "#3B2A1E" },
+  { bg: "#EAE3F2", text: "#2E1E3B" },
+];
+
 export interface ContactItemProps {
   contact: IContact;
   isSelected: boolean;
   onToggle: (id: string) => void;
+  hideRelationship?: boolean;
 }
 
 export const ContactItem: React.FC<ContactItemProps> = ({
   contact,
   isSelected,
   onToggle,
+  hideRelationship,
 }) => {
   const contactId = contact.id || contact._id || "";
+  const charCode = (contact.name || "A").charCodeAt(0);
+  const pastel = CONTACT_PASTELS[charCode % CONTACT_PASTELS.length];
+  const avatarSrc = contact.avatar || (contact as any).profileImage || (contact as any).avatarUrl || undefined;
 
   return (
     <div
@@ -73,14 +85,34 @@ export const ContactItem: React.FC<ContactItemProps> = ({
       className="flex items-center justify-between py-2.5 px-1 cursor-pointer transition-opacity hover:opacity-80 active:scale-[0.99] select-none"
     >
       <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
-        <Avatar name={contact.name} size="md" className="w-10 h-10 rounded-full shrink-0" />
+        <div className="relative w-8 h-11 rounded-full border border-gray-100 shrink-0 overflow-hidden shadow-2xs">
+          <Avatar
+            src={avatarSrc}
+            name={contact.name}
+            size="md"
+            style={{
+              backgroundColor: pastel.bg,
+              color: pastel.text,
+              fontFamily: theme.fonts.sans,
+              fontWeight: 600,
+            }}
+            className="w-full h-full rounded-full text-xs !border-0 font-medium"
+          />
+        </div>
         <div className="flex flex-col min-w-0">
-          <span
-            style={{ fontFamily: theme.fonts.heading, color: theme.colors.text.primary }}
-            className="font-semibold text-[15px] leading-tight truncate"
-          >
-            {contact.name}
-          </span>
+          <div className="flex items-center gap-2">
+            <span
+              style={{ fontFamily: theme.fonts.heading, color: theme.colors.text.primary }}
+              className="font-semibold text-[15px] leading-tight truncate"
+            >
+              {contact.name}
+            </span>
+            {!hideRelationship && contact.relationship && (
+              <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                {contact.relationship}
+              </span>
+            )}
+          </div>
           <span
             style={{ fontFamily: theme.fonts.sans, color: theme.colors.text.tertiary }}
             className="text-[12.5px] leading-normal truncate mt-0.5"
@@ -110,6 +142,7 @@ export interface ContactSelectionListProps {
   onToggle: (id: string) => void;
   onCreateContact?: (data: ICreateContactRequest) => Promise<void>;
   isLoading?: boolean;
+  hideRelationship?: boolean;
 }
 
 export const ContactSelectionList: React.FC<ContactSelectionListProps> = ({
@@ -117,6 +150,7 @@ export const ContactSelectionList: React.FC<ContactSelectionListProps> = ({
   selectedIds,
   onToggle,
   isLoading = false,
+  hideRelationship = false,
 }) => {
   if (isLoading) {
     return (
@@ -142,151 +176,9 @@ export const ContactSelectionList: React.FC<ContactSelectionListProps> = ({
           contact={c}
           isSelected={selectedIds.includes(c.id || c._id || "")}
           onToggle={onToggle}
+          hideRelationship={hideRelationship}
         />
       ))}
-    </div>
-  );
-};
-
-export interface AddContactModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onAddContact: (data: ICreateContactRequest) => Promise<void>;
-  isLoading?: boolean;
-}
-
-export const AddContactModal: React.FC<AddContactModalProps> = ({
-  isOpen,
-  onClose,
-  onAddContact,
-  isLoading = false,
-}) => {
-  const [name, setName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [relationship, setRelationship] = React.useState("");
-  const [error, setError] = React.useState<string | null>(null);
-
-  if (!isOpen) return null;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !email.trim()) {
-      setError("Name and email are required.");
-      return;
-    }
-    try {
-      setError(null);
-      await onAddContact({
-        name: name.trim(),
-        email: email.trim(),
-        relationship: relationship.trim() || undefined,
-      });
-      setName("");
-      setEmail("");
-      setRelationship("");
-      onClose();
-    } catch (err: any) {
-      setError(err?.data?.message || "Failed to add contact.");
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div
-        style={{ backgroundColor: theme.colors.surface.default }}
-        className="w-full max-w-sm rounded-2xl p-6 shadow-xl border border-gray-100 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200"
-      >
-        <h3
-          style={{ fontFamily: theme.fonts.heading, color: theme.colors.text.primary }}
-          className="text-lg font-bold"
-        >
-          Add New Recipient
-        </h3>
-
-        {error && (
-          <div className="text-xs text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-200">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <div>
-            <label
-              style={{ color: theme.colors.text.secondary }}
-              className="block text-xs font-semibold uppercase tracking-wider mb-1"
-            >
-              Name *
-            </label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Jane Doe"
-              disabled={isLoading}
-              className="w-full text-sm py-2 px-3 rounded-xl border border-gray-200 outline-none focus:border-[#2B7FCE] transition-colors"
-            />
-          </div>
-
-          <div>
-            <label
-              style={{ color: theme.colors.text.secondary }}
-              className="block text-xs font-semibold uppercase tracking-wider mb-1"
-            >
-              Email Address *
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. jane@example.com"
-              disabled={isLoading}
-              className="w-full text-sm py-2 px-3 rounded-xl border border-gray-200 outline-none focus:border-[#2B7FCE] transition-colors"
-            />
-          </div>
-
-          <div>
-            <label
-              style={{ color: theme.colors.text.secondary }}
-              className="block text-xs font-semibold uppercase tracking-wider mb-1"
-            >
-              Relationship (Optional)
-            </label>
-            <input
-              type="text"
-              value={relationship}
-              onChange={(e) => setRelationship(e.target.value)}
-              placeholder="e.g. Sister, Friend"
-              disabled={isLoading}
-              className="w-full text-sm py-2 px-3 rounded-xl border border-gray-200 outline-none focus:border-[#2B7FCE] transition-colors"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 mt-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isLoading}
-              style={{ color: theme.colors.text.secondary }}
-              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold transition-opacity hover:opacity-80 cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              style={{
-                backgroundColor: theme.colors.primary.action,
-                color: theme.colors.text.inverse,
-              }}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90 cursor-pointer disabled:opacity-50 flex items-center justify-center"
-            >
-              {isLoading ? "Adding..." : "Add"}
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   );
 };

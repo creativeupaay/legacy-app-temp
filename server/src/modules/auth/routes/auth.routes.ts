@@ -51,6 +51,6 @@ router.post("/refresh", refreshToken);
 // Protected routes
 router.post("/complete-onboarding", protect(), completeOnboarding);
 router.post("/logout", protect(), logout);
-router.get("/me", optionalAuth(), getCurrentUser);
+router.get("/me", protect(), getCurrentUser);
 
 export default router;

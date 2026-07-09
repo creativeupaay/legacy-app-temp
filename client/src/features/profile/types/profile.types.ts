@@ -24,6 +24,8 @@ export interface IProfileResponse {
 export interface IProfileInsights {
   memories: number;
   streak: number;
+  longestStreak: number;
+  activeDays: string[];
   recipients: number;
   sharedMemories: number;
 }

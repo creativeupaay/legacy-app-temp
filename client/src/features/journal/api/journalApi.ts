@@ -16,7 +16,10 @@ import type {
 export const journalApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Journal Endpoints
-    getJournalEntries: builder.query<IJournalEntry[], void | { privacy?: string }>({
+    getJournalEntries: builder.query<
+      IJournalEntry[],
+      void | { privacy?: string; folderId?: string | null }
+    >({
       query: (params) => ({
         url: "/journal",
         method: "GET",
@@ -42,18 +45,16 @@ export const journalApi = baseApi.injectEndpoints({
         body: data,
       }),
       transformResponse: (response: ISingleEntryResponse) => response.data.entry,
-      invalidatesTags: ["Journal", "Insights"],
+      invalidatesTags: ["Journal", "Insights", "JournalFolders"],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
           const { data: newEntry } = await queryFulfilled;
           dispatch(
             journalApi.util.updateQueryData("getJournalEntries", undefined, (draft) => {
-              // Immediately prepend the new journal to the top of the timeline
               draft.unshift(newEntry);
             })
           );
         } catch {
-          // Handled by invalidatesTags / standard error handling
         }
       },
     }),
@@ -71,6 +72,7 @@ export const journalApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [
         "Journal",
         "Insights",
+        "JournalFolders",
         { type: "Journal", id },
       ],
     }),
@@ -80,7 +82,7 @@ export const journalApi = baseApi.injectEndpoints({
         url: `/journal/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Journal", "Insights"],
+      invalidatesTags: ["Journal", "Insights", "JournalFolders"],
     }),
 
     // Contacts (UserSharing) Endpoints
