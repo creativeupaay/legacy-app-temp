@@ -87,13 +87,16 @@ export const listFolders = asyncHandler(async (req: Request, res: Response) => {
 
   const folders = await JournalFolder.find({ ownerId }).sort({ createdAt: 1 });
 
+  // Sum up all counts to get the total number of journal entries
+  const totalJournalCount = counts.reduce((sum, item) => sum + (item.journalCount || 0), 0);
+
   // Virtual "All Entries" folder at the top (folderId = null)
   const allEntriesFolder: IFolderResponse = {
     id: null,
     name: "All Entries",
     icon: "BookOpen",
     color: "#182232",
-    journalCount: countMap.get("null") || 0,
+    journalCount: totalJournalCount,
   };
 
   const customFolders = folders.map((folder) =>

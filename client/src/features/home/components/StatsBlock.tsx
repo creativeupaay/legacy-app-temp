@@ -10,8 +10,8 @@ export const StatsBlock: React.FC = () => {
   const insights = insightsResponse?.data?.insights;
   const longestStreak = insights?.longestStreak || 0;
   
-  // Calculate dynamic data based on actual journals
-  const totalEntries = journals?.length || 0;
+  // Calculate dynamic data based on insights and journals
+  const totalEntries = insights?.memories || 0;
   const totalWords = journals?.reduce((acc, journal) => {
     if (!journal.textBody) return acc;
     let textContent = journal.textBody;

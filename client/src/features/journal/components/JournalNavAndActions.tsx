@@ -4,7 +4,6 @@ import { Plus, ChevronRight, Search, X, MoreHorizontal } from "lucide-react";
 import { theme } from "@/theme/theme";
 import type { IJournalFolder } from "@/features/journal/types/journalFolder.types";
 
-
 export interface JournalHeaderProps {
   onSearchClick?: () => void;
   onCalendarClick?: () => void;
@@ -115,7 +114,7 @@ export const JournalHeader: React.FC<JournalHeaderProps> = ({
   if (isSearchOpen) {
     return (
       <div className="flex items-center justify-between w-full mb-5 pt-1 px-[4.35%] animate-in fade-in duration-200">
-        <div className="flex items-center flex-1 mr-2 bg-white border border-black/10 rounded-full px-3 h-10 shadow-sm gap-1.5">
+        <div className="flex items-center flex-1 mr-2 bg-[#ECEAE4] rounded-full px-3 h-10 gap-1.5">
           <Search className="w-4 h-4 text-gray-500 shrink-0" />
           <input
             type="text"
@@ -399,4 +398,3 @@ export type {
   JournalCalendarWidgetProps,
   JournalInlineCalendarDropdownProps,
 } from "./JournalCalendarComponents";
-

@@ -119,7 +119,7 @@ const JournalPage: React.FC = () => {
     }
   };
 
-  const allCount = entries.length;
+  const allCount = folders.find((f) => f.id === null)?.journalCount ?? entries.length;
 
   const displayedEntries = React.useMemo(() => {
     return entries.filter((e) => {
@@ -214,14 +214,15 @@ const JournalPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-[480px] mx-auto flex flex-col min-h-full relative pb-44">
+    <div className="w-full max-w-[480px] mx-auto flex flex-col min-h-screen relative pb-44">
       {/* ── Sticky Header: search bar + filter chips stay pinned on scroll ── */}
       <div
         style={{
           backgroundColor: theme.colors.surface.mainBg,
           boxShadow: "0 4px 16px rgba(0,0,0,0.0)",
-          margin: "-4.35% -4.35% 0 -4.35%",
-          paddingTop: "4.35%",
+          paddingTop: "4%",
+          marginLeft: "-4%",
+          marginRight: "-4%",
         }}
         className="sticky top-0 z-20 transition-shadow duration-200"
         id="journal-sticky-header"

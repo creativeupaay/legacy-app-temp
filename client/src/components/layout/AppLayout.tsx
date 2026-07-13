@@ -10,6 +10,7 @@ const AppLayout: React.FC = () => {
     location.pathname
   );
   const isHomeRoute = ["/home", "/"].includes(location.pathname);
+  const isJournalRoute = location.pathname === "/journal";
 
   return (
     <div
@@ -31,7 +32,16 @@ const AppLayout: React.FC = () => {
           className="fixed inset-0 w-full max-w-[480px] mx-auto h-full pointer-events-none z-0"
         />
       )}
-      <main className={`flex-1 relative ${isHomeRoute ? "pb-[14vh]" : "p-[4%] pb-[14vh]"}`}>
+      <main
+        className={`relative ${
+          isJournalRoute
+            ? "overflow-y-auto no-scrollbar px-[4%] pb-[14vh]"
+            : isHomeRoute
+            ? "flex-1 pb-[14vh]"
+            : "flex-1 p-[4%] pb-[14vh]"
+        }`}
+        style={isJournalRoute ? { height: "100dvh" } : undefined}
+      >
         <Outlet />
       </main>
       <div className="fixed bottom-[2vh] left-0 right-0 z-40 flex justify-center pointer-events-none">
