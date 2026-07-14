@@ -6,11 +6,13 @@ export interface IProfile {
   email: string;
   avatar?: string | null;
   createdAt?: string;
+  inactivityDays?: number;
 }
 
 export interface IUpdateProfileRequest {
   fullName?: string;
   avatar?: string | null;
+  inactivityDays?: number;
 }
 
 export interface IProfileResponse {

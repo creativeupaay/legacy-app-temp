@@ -40,6 +40,7 @@ export interface IUpdateEntryRequest {
 
 export interface IEntryResponse {
   id: string;
+  ownerId?: string;
   title: string;
   textBody: string;
   privacy: EntryPrivacy;
@@ -48,4 +49,10 @@ export interface IEntryResponse {
   folderId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  author?: {
+    fullName: string;
+    avatar: string | null;
+    email: string;
+    relationship?: string;
+  };
 }

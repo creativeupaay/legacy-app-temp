@@ -92,6 +92,8 @@ export const verifyOtpService = async (email: string, otp: string, otpToken: str
     isVerified: true,
     lastActiveAt: now,
     refreshTokens: updatedTokens,
+    "trigger.status": "not_triggered",
+    "trigger.triggeredAt": null,
   });
 
   return { accessToken, refreshToken, user, isNewUser };
@@ -143,6 +145,8 @@ export const refreshTokenService = async (refreshTokenFromCookie: string) => {
   await AuthUser.findByIdAndUpdate(user._id, {
     lastActiveAt: now,
     refreshTokens: updatedTokens,
+    "trigger.status": "not_triggered",
+    "trigger.triggeredAt": null,
   });
 
   return { newAccessToken, newRefreshToken };

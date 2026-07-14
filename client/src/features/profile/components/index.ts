@@ -11,3 +11,5 @@ export { ProfileRecipients } from "./ProfileRecipients";
 export type { ProfileRecipientsProps } from "./ProfileRecipients";
 
 export { ProfileSettingsCard } from "./ProfileSettingsCard";
+export { ThresholdSelectionModal } from "./ThresholdSelectionModal";
+export type { ThresholdSelectionModalProps } from "./ThresholdSelectionModal";

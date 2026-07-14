@@ -104,6 +104,16 @@ export const journalApi = baseApi.injectEndpoints({
       transformResponse: (response: ISingleContactResponse) => response.data.contact,
       invalidatesTags: ["Contacts", "Insights"],
     }),
+
+    // Legacy Memories Endpoint
+    getMemories: builder.query<IJournalEntry[], void>({
+      query: () => ({
+        url: "/journal/memories",
+        method: "GET",
+      }),
+      transformResponse: (response: IListEntriesResponse) => response.data?.entries || [],
+      providesTags: ["Journal"],
+    }),
   }),
 });
 
@@ -115,4 +125,5 @@ export const {
   useDeleteJournalEntryMutation,
   useGetContactsQuery,
   useCreateContactMutation,
+  useGetMemoriesQuery,
 } = journalApi;

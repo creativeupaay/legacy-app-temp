@@ -9,6 +9,8 @@ export interface JournalEntryCardProps {
   bodyText?: string; // required if type === "written"
   audioUrl?: string; // required if type === "audio" — used later for actual playback, just stored/passed through for now
   onClick?: () => void; // navigate to entry detail
+  authorName?: string;
+  relationship?: string;
 }
 
 const WAVEFORM_PLACEHOLDER_HEIGHTS = [
@@ -38,28 +40,49 @@ export const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
   bodyText,
   audioUrl,
   onClick,
+  authorName,
+  relationship,
 }) => {
+  const hasAuthor = Boolean(authorName);
+  const titleRow = hasAuthor ? 2 : 1;
+  const bodyRow = hasAuthor ? 3 : 2;
+
   return (
     <div
       onClick={onClick}
       data-entry-id={entryId}
       data-audio-url={audioUrl}
-      style={{ backgroundColor: theme.colors.surface.default }}
-      className="rounded-[16px] w-full min-h-[88px] px-[18px] py-[16px] grid grid-rows-[auto_auto] grid-cols-[1fr_auto] gap-y-[10px] cursor-pointer transition-all duration-200 overflow-hidden box-border"
+      className="rounded-[16px] w-full min-h-[88px] px-[18px] py-[16px] grid grid-cols-[1fr_auto] gap-y-[10px] cursor-pointer transition-all duration-200 overflow-hidden box-border"
+      style={{
+        backgroundColor: theme.colors.surface.default,
+        gridTemplateRows: hasAuthor ? "auto auto auto" : "auto auto",
+      }}
     >
-      {/* Title — row-start: 1, col-start: 1, col-span: 1, min-h: 16px */}
+      {/* Author Row (Optional) — row: 1 */}
+      {hasAuthor && (
+        <div className="col-start-1 col-span-2 row-start-1 flex items-center gap-1.5 text-[11px] font-semibold text-[#8d8d91] tracking-wider uppercase mb-0.5">
+          <span style={{ color: theme.colors.primary.action }}>{authorName}</span>
+          {relationship && <span className="opacity-80">({relationship})</span>}
+        </div>
+      )}
+
+      {/* Title — col-start: 1, col-span: 1 */}
       <p
+        className="col-start-1 col-span-1 row-span-1 min-h-[20px] leading-snug font-bold text-[16.5px] tracking-[-0.2px] truncate m-0 self-center"
         style={{
           color: theme.colors.text.primary,
           fontFamily: theme.fonts.nunito,
+          gridRowStart: titleRow,
         }}
-        className="col-start-1 col-span-1 row-start-1 row-span-1 min-h-[20px] leading-snug font-bold text-[16.5px] tracking-[-0.2px] truncate m-0 self-center"
       >
         {heading}
       </p>
 
-      {/* Chevron — row-start: 1, col-start: 2 */}
-      <div className="col-start-2 row-start-1 self-center flex items-center justify-end pl-2">
+      {/* Chevron — col-start: 2 */}
+      <div 
+        className="col-start-2 self-center flex items-center justify-end pl-2"
+        style={{ gridRowStart: titleRow }}
+      >
         <ChevronRight
           size={18}
           style={{ color: theme.colors.icon.muted }}
@@ -67,20 +90,24 @@ export const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
         />
       </div>
 
-      {/* Body / Content Row — row-start: 2, col-start: 1, col-span: 2, w: full, min-h: 32px */}
+      {/* Body / Content Row — col-start: 1, col-span: 2 */}
       {type === "written" ? (
         <p
+          className="col-start-1 col-span-2 w-full min-h-[36px] text-[13.5px] tracking-[0.1px] leading-[20px] line-clamp-2 m-0 overflow-hidden"
           style={{
             color: theme.colors.text.secondary,
             fontFamily: theme.fonts.sans,
+            gridRowStart: bodyRow,
           }}
-          className="col-start-1 col-span-2 row-start-2 row-span-1 w-full min-h-[36px] text-[13.5px] tracking-[0.1px] leading-[20px] line-clamp-2 m-0 overflow-hidden"
         >
           {stripHtml(bodyText)}
         </p>
       ) : (
-        /* Waveform placeholder — centered vertical bars spanning 100% of inner card width (col-span-2) */
-        <div className="col-start-1 col-span-2 row-start-2 row-span-1 w-full h-8 flex items-center justify-between gap-[2px] overflow-hidden">
+        /* Waveform placeholder */
+        <div 
+          className="col-start-1 col-span-2 w-full h-8 flex items-center justify-between gap-[2px] overflow-hidden"
+          style={{ gridRowStart: bodyRow }}
+        >
           {WAVEFORM_PLACEHOLDER_HEIGHTS.map((h, i) => (
             <div
               key={i}

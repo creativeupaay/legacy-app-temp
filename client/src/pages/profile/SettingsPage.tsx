@@ -3,6 +3,7 @@ import { theme } from "@/theme/theme";
 import { useLogoutMutation } from "@/features/auth/api/authApi";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Button } from "@/components/ui";
+import { useGetMyProfileQuery, useUpdateMyProfileMutation, ThresholdSelectionModal } from "@/features/profile";
 import {
   Search,
   Mail,
@@ -172,6 +173,26 @@ const SettingsPage: React.FC = () => {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [journalReminders, setJournalReminders] = useState(true);
   const [sharedMemoryAlerts, setSharedMemoryAlerts] = useState(false);
+  const [isThresholdModalOpen, setIsThresholdModalOpen] = useState(false);
+
+  const { data: profileResponse } = useGetMyProfileQuery();
+  const [updateProfile] = useUpdateMyProfileMutation();
+
+  const profile = profileResponse?.data?.profile;
+  const currentThreshold = profile?.inactivityDays ?? 90;
+
+  const getThresholdLabel = (days: number) => {
+    if (days === 30) return "1 month";
+    if (days === 60) return "2 months";
+    if (days === 90) return "3 months";
+    if (days === 180) return "6 months";
+    if (days === 365) return "12 months";
+    return `${Math.round(days / 30)} months`;
+  };
+
+  const handleSaveThreshold = async (days: number) => {
+    await updateProfile({ inactivityDays: days }).unwrap();
+  };
 
   const handleLogout = async () => {
     try {
@@ -228,12 +249,12 @@ const SettingsPage: React.FC = () => {
               letterSpacing: "0px",
             }}
           >
-            2 months
+            {getThresholdLabel(currentThreshold)}
           </span>
           <ChevronRight size={14} style={{ color: theme.colors.icon.muted }} />
         </>
       ),
-      onClick: () => alert("Legacy Threshold feature coming soon"),
+      onClick: () => setIsThresholdModalOpen(true),
     },
     // NOTIFICATIONS
     {
@@ -595,6 +616,13 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
       )}
+      
+      <ThresholdSelectionModal
+        isOpen={isThresholdModalOpen}
+        onClose={() => setIsThresholdModalOpen(false)}
+        currentValue={currentThreshold}
+        onSave={handleSaveThreshold}
+      />
     </div>
   );
 };

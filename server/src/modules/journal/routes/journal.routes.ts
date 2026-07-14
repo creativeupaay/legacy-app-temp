@@ -14,6 +14,7 @@ router.post("/", validate(createEntrySchema), journalController.createEntry);
 // query params are validated inside listEntries via listEntriesQuerySchema
 router.get("/", journalController.listEntries);
 
+router.get("/memories", journalController.listMemories);
 router.get("/:id", journalController.getEntry);
 router.patch("/:id", validate(updateEntrySchema), journalController.updateEntry);
 router.delete("/:id", journalController.deleteEntry);

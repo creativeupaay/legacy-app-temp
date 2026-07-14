@@ -19,6 +19,13 @@ export interface IJournalEntry {
   entryDate: string | Date;
   createdAt: string | Date;
   updatedAt?: string | Date;
+  author?: {
+    id?: string;
+    fullName: string;
+    email: string;
+    avatar?: string | null;
+    relationship?: string;
+  };
 }
 
 export interface ICreateEntryRequest {

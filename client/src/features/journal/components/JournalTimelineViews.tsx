@@ -72,6 +72,8 @@ export const JournalTimeline: React.FC<JournalTimelineProps> = ({
                 type="written"
                 bodyText={entry.textBody}
                 onClick={() => onEntryClick(entryId)}
+                authorName={entry.author?.fullName?.trim() || entry.author?.email}
+                relationship={entry.author?.relationship}
               />
             </div>
           </div>

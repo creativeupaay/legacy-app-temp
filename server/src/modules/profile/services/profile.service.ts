@@ -10,6 +10,7 @@ export interface IProfileData {
   email: string;
   avatar: string | null;
   createdAt: Date;
+  inactivityDays?: number;
 }
 
 export interface IProfileInsights {
@@ -36,6 +37,7 @@ export class ProfileService {
       email: user.email,
       avatar: user.avatar || null,
       createdAt: user.createdAt,
+      inactivityDays: user.trigger?.inactivityDays ?? 90,
     };
   }
 
@@ -44,11 +46,18 @@ export class ProfileService {
    */
   public static async updateProfile(
     userId: string,
-    data: { fullName?: string; avatar?: string }
+    data: { fullName?: string; avatar?: string; inactivityDays?: number }
   ): Promise<IProfileData> {
+    const updateFields: Record<string, any> = {};
+    if (data.fullName !== undefined) updateFields.fullName = data.fullName;
+    if (data.avatar !== undefined) updateFields.avatar = data.avatar;
+    if (data.inactivityDays !== undefined) {
+      updateFields["trigger.inactivityDays"] = data.inactivityDays;
+    }
+
     const user = await AuthUser.findByIdAndUpdate(
       userId,
-      { ...data },
+      { $set: updateFields },
       { new: true, runValidators: true }
     );
     if (!user) {
@@ -60,6 +69,7 @@ export class ProfileService {
       email: user.email,
       avatar: user.avatar || null,
       createdAt: user.createdAt,
+      inactivityDays: user.trigger?.inactivityDays ?? 90,
     };
   }
 

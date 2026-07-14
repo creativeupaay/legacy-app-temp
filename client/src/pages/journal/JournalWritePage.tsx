@@ -93,6 +93,14 @@ const JournalWritePage: React.FC = () => {
 
   /* ── API Query ── */
   const { data: entry } = useGetJournalByIdQuery(entryId ?? "", { skip: !entryId });
+  const { user } = useAppSelector((state) => state.auth);
+  const isOwner = !entry || entry.ownerId === user?.id;
+
+  useEffect(() => {
+    if (!isOwner) {
+      setMode("view");
+    }
+  }, [isOwner]);
 
   /* ── Populate local state when entry loads ── */
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -168,7 +176,14 @@ const JournalWritePage: React.FC = () => {
     let bg = "rgba(0,0,0,0.05)";
     let color: string = theme.colors.text.secondary;
 
-    if (localPrivacy === EntryPrivacy.SHARED_ALL) {
+    if (!isOwner) {
+      icon = <Users className="w-3 h-3 shrink-0 text-purple-500" />;
+      const ownerName = entry?.author?.fullName?.trim() || entry?.author?.email || "Owner";
+      const relationshipSuffix = entry?.author?.relationship ? ` (${entry.author.relationship})` : "";
+      label = `Shared by ${ownerName}${relationshipSuffix}`;
+      bg = "#F5F3FF";
+      color = "#7C3AED";
+    } else if (localPrivacy === EntryPrivacy.SHARED_ALL) {
       icon = <Globe className="w-3 h-3 shrink-0 text-blue-500" />;
       label = "Shared with Everyone";
       bg = "#EFF6FF";
@@ -299,56 +314,58 @@ const JournalWritePage: React.FC = () => {
 
         <div className="z-10 relative flex items-center justify-end shrink-0" ref={menuRef}>
           {isViewMode ? (
-            <>
-              <button
-                type="button"
-                onClick={() => setIsMenuOpen((prev) => !prev)}
-                aria-label="More options"
-                style={{ backgroundColor: "rgba(0,0,0,0.06)" }}
-                className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-black/10 active:scale-95 transition-all cursor-pointer"
-              >
-                <MoreHorizontal
-                  className="w-5 h-5"
-                  style={{ color: theme.colors.text.primary }}
-                />
-              </button>
-
-              {isMenuOpen && (
-                <div
-                  style={{
-                    backgroundColor: theme.colors.surface.default,
-                    boxShadow:
-                      "0px 8px 32px rgba(0,0,0,0.12), 0px 2px 8px rgba(0,0,0,0.06)",
-                    fontFamily: theme.fonts.sans,
-                  }}
-                  className="absolute right-0 top-[calc(100%+8px)] w-[180px] rounded-[18px] overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150"
+            isOwner ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsMenuOpen((prev) => !prev)}
+                  aria-label="More options"
+                  style={{ backgroundColor: "rgba(0,0,0,0.06)" }}
+                  className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-black/10 active:scale-95 transition-all cursor-pointer"
                 >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setMode("edit");
-                      setTimeout(() => quillRef.current?.focus(), 100);
-                    }}
+                  <MoreHorizontal
+                    className="w-5 h-5"
                     style={{ color: theme.colors.text.primary }}
-                    className="w-full text-left px-4 py-3.5 text-[14px] font-medium hover:bg-black/[0.04] transition-colors cursor-pointer border-b border-black/[0.05]"
-                  >
-                    Edit
-                  </button>
+                  />
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setShowDeleteDialog(true);
+                {isMenuOpen && (
+                  <div
+                    style={{
+                      backgroundColor: theme.colors.surface.default,
+                      boxShadow:
+                        "0px 8px 32px rgba(0,0,0,0.12), 0px 2px 8px rgba(0,0,0,0.06)",
+                      fontFamily: theme.fonts.sans,
                     }}
-                    className="w-full text-left px-4 py-3.5 text-[14px] font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                    className="absolute right-0 top-[calc(100%+8px)] w-[180px] rounded-[18px] overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150"
                   >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setMode("edit");
+                        setTimeout(() => quillRef.current?.focus(), 100);
+                      }}
+                      style={{ color: theme.colors.text.primary }}
+                      className="w-full text-left px-4 py-3.5 text-[14px] font-medium hover:bg-black/[0.04] transition-colors cursor-pointer border-b border-black/[0.05]"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        setShowDeleteDialog(true);
+                      }}
+                      className="w-full text-left px-4 py-3.5 text-[14px] font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : null
           ) : (
             <button
               type="button"
